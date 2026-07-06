@@ -12,6 +12,9 @@ import com.jetbrains.plugin.structure.base.telemetry.PluginTelemetry
 import com.jetbrains.plugin.structure.base.utils.simpleName
 import com.jetbrains.plugin.structure.intellij.plugin.PluginBeanToIdePluginConverter.UnsupportedClientAttributeValue
 import com.jetbrains.plugin.structure.intellij.plugin.PluginDescriptorParser.ParseResult.Parsed
+import com.jetbrains.plugin.structure.intellij.plugin.community.CommunityDescriptorParser
+import com.jetbrains.plugin.structure.intellij.plugin.community.CommunityParserFeature
+import com.jetbrains.plugin.structure.intellij.plugin.community.RawDescriptorMapper
 import com.jetbrains.plugin.structure.intellij.plugin.ValidationContext.ValidationResult
 import com.jetbrains.plugin.structure.intellij.plugin.descriptors.DescriptorResource
 import com.jetbrains.plugin.structure.intellij.plugin.loaders.PluginThemeLoader
@@ -37,6 +40,8 @@ internal class PluginCreator private constructor(
 
     private val themeLoader = PluginThemeLoader()
     private val descriptorParser = PluginDescriptorParser()
+    private val communityDescriptorParser = CommunityDescriptorParser()
+    private val rawDescriptorMapper = RawDescriptorMapper()
     private val beanValidator = PluginBeanValidator()
     private val beanToPluginConverter = PluginBeanToIdePluginConverter()
     private val legacyIntelliJIdeaPluginVerifier = LegacyIntelliJIdeaPluginVerifier()
@@ -270,6 +275,10 @@ internal class PluginCreator private constructor(
     pathResolver: ResourceResolver,
     validateDescriptor: Boolean
   ) {
+    if (CommunityParserFeature.isEnabled) {
+      resolveWithCommunityParser(originalDocument, documentPath, pathResolver, validateDescriptor)
+      return
+    }
     val validationContext = ValidationContext(descriptorPath, problemResolver)
 
     val parsingResult = descriptorParser.parse(
@@ -303,6 +312,65 @@ internal class PluginCreator private constructor(
 
     plugin.underlyingDocument = document
     beanToPluginConverter.convert(bean, document, parentPlugin, ::registerProblem, plugin)
+
+    val themeResolution = themeLoader.load(plugin, documentPath, pathResolver, ::registerProblem)
+    when (themeResolution) {
+      is PluginThemeLoader.Result.Found -> plugin.declaredThemes.addAll(themeResolution.themes)
+      PluginThemeLoader.Result.NotFound -> Unit
+      PluginThemeLoader.Result.Failed -> return
+    }
+
+    validatePlugin(plugin)
+  }
+
+  /**
+   * Experimental alternative to the legacy JDOM/JAXB pipeline: parses the descriptor with the
+   * vendored intellij-community parser and maps the resulting `RawPluginDescriptor` onto the
+   * verifier model. Mirrors the control flow of the legacy branch; bean validation is reused
+   * over a mapped [com.jetbrains.plugin.structure.intellij.beans.PluginBean].
+   *
+   * Note: unlike the legacy branch, [IdePluginImpl.underlyingDocument] holds the document
+   * *before* `<xi:include>` resolution (includes are resolved inside the community parser).
+   * See `structure-intellij-community/DESIGN.md`.
+   */
+  private fun resolveWithCommunityParser(
+    originalDocument: Document,
+    documentPath: Path,
+    pathResolver: ResourceResolver,
+    validateDescriptor: Boolean
+  ) {
+    val validationContext = ValidationContext(descriptorPath, problemResolver)
+
+    val rawDescriptor = communityDescriptorParser.parse(
+      descriptorPath,
+      pluginFileName,
+      originalDocument,
+      documentPath,
+      pathResolver,
+      validationContext
+    )
+    if (rawDescriptor == null) {
+      validationContext.problems.forEach { registerProblem(it) }
+      return
+    }
+
+    val bean = rawDescriptorMapper.toPluginBean(rawDescriptor)
+    beanValidator.validate(bean, validationContext, validateDescriptor)
+    val validationResult = validationContext.getResult {
+      newInvalidPlugin(bean, originalDocument)
+    }
+
+    if (validationResult is ValidationResult.Invalid) {
+      invalidPlugin = validationResult.invalidPlugin
+      validationResult.problems.forEach { registerProblem(it) }
+      return
+    }
+    if (validationResult is ValidationResult.ValidWithWarnings) {
+      validationResult.warnings.forEach { registerProblem(it) }
+    }
+
+    plugin.underlyingDocument = originalDocument
+    rawDescriptorMapper.convert(rawDescriptor, parentPlugin, ::registerProblem, plugin)
 
     val themeResolution = themeLoader.load(plugin, documentPath, pathResolver, ::registerProblem)
     when (themeResolution) {

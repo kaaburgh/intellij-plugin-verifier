@@ -2,6 +2,7 @@ rootProject.name = "intellij-plugin-structure"
 include("structure-base")
 include("structure-classes")
 include("structure-intellij")
+include("structure-intellij-community")
 include("structure-intellij-classes")
 include("structure-teamcity")
 include("structure-dotnet")

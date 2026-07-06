@@ -1,0 +1,243 @@
+<idea-plugin>
+    <id>detekt</id>
+    <name>detekt</name>
+    <category>Tools Integration</category>
+    <vendor email="arturbosch@gmx.de" url="https://github.com/detekt">
+        detekt
+    </vendor>
+
+    <description><![CDATA[
+        Plugin for <a href="https://detekt.github.io/detekt">detekt</a>, static code analysis for kotlin.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <idea-version since-build="223.7571.182"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Turn off error reporting for now due to https://github.com/detekt/detekt-intellij-plugin/issues/271 -->
+        <!-- <errorHandler implementation="io.gitlab.arturbosch.detekt.idea.util.GitHubErrorReporting"/>-->
+        <externalAnnotator language="kotlin" implementationClass="io.gitlab.arturbosch.detekt.idea.DetektAnnotator"/>
+
+        <projectService serviceImplementation="io.gitlab.arturbosch.detekt.idea.config.DetektPluginSettings"/>
+        <projectService serviceImplementation="io.gitlab.arturbosch.detekt.idea.config.DetektSettingsMigration"/>
+
+        <!--suppress PluginXmlI18n -->
+        <projectConfigurable groupId="tools"
+                             displayName="detekt"
+                             id="preferences.detekt"
+                             instance="io.gitlab.arturbosch.detekt.idea.config.DetektConfig"/>
+
+        <problemsViewPanelProvider implementation="io.gitlab.arturbosch.detekt.idea.problems.FindingsView"/>
+        <toolWindow id="detekt doc"
+                    factoryClass="io.gitlab.arturbosch.detekt.idea.webviews.DocumentationToolWindow"
+                    anchor="right"
+                    icon="DetektIcons.DocsToolWindow"/>
+
+        <iconMapper mappingFile="DetektIconMappings.json"/>
+    </extensions>
+
+    <applicationListeners>
+        <listener class="io.gitlab.arturbosch.detekt.idea.DetektProjectManagerListener"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </applicationListeners>
+
+    <actions>
+        <action id="io.gitlab.arturbosch.detekt.idea.action.AutoCorrect"
+                class="io.gitlab.arturbosch.detekt.idea.action.AutoCorrectAction"
+                text="AutoCorrect by detekt Rules"
+                description="Run AutoCorrect action on the current file">
+            <add-to-group group-id="RefactoringMenu"/>
+        </action>
+        <action id="io.gitlab.arturbosch.detekt.idea.action.EnableBackgroundAnalysisAction"
+                class="io.gitlab.arturbosch.detekt.idea.action.EnableBackgroundAnalysisAction"
+                text="Enable Background Analysis"
+                description="Shortcut to enable detekt through an action instead of the settings menu."/>
+        <action id="io.gitlab.arturbosch.detekt.idea.webviews.ShowRulesAction"
+                class="io.gitlab.arturbosch.detekt.idea.webviews.ShowRulesAction"
+                text="Show detekt Rules Documentation"/>
+        <action id="io.gitlab.arturbosch.detekt.idea.webviews.ShowChangelogAction"
+                class="io.gitlab.arturbosch.detekt.idea.webviews.ShowChangelogAction"
+                text="Show detekt Changelog"/>
+        <group id="io.gitlab.arturbosch.detekt.idea.action.RunDetektMenuGroup"
+               text="Run detekt"
+               popup="true"
+               class="io.gitlab.arturbosch.detekt.idea.action.RunDetektMenuGroup">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+
+            <action id="io.gitlab.arturbosch.detekt.idea.menu.analyze"
+                    class="io.gitlab.arturbosch.detekt.idea.action.RunAnalysisAction"
+                    popup="true"
+                    text="Analyze File/Directory"/>
+            <action id="io.gitlab.arturbosch.detekt.idea.menu.autocorrect"
+                    class="io.gitlab.arturbosch.detekt.idea.action.AutoCorrectAction"
+                    popup="true"
+                    text="AutoCorrect by detekt Rules"/>
+        </group>
+    </actions>
+
+    <change-notes><![CDATA[
+      <ul>
+        <li>2.4.3
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.8</li>
+                <li>Ignore AI snippets - #528</li>
+            </ul>
+        </li>
+        <li>2.4.2
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.7</li>
+            </ul>
+        </li>
+        <li>2.4.1
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.6</li>
+                <li>Fix error notifications showing detekt does not override update thread function</li>
+            </ul>
+        </li>
+        <li>2.4.0
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.6</li>
+                <li>Add support for IntelliJ 2024.1</li>
+                <li>Drop support for IntelliJ 2022.1</li>
+            </ul>
+        </li>
+        <li>2.3.0
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.4</li>
+                <li>Workaround transitive logging classloader problem by constraining the dependency to a newer fixed version - #501</li>
+            </ul>
+        </li>
+        <li>2.2.0
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.3</li>
+            </ul>
+        </li>
+        <li>2.1.0
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.1</li>
+                <li>Make detekt plugin opt-in per-project.</li>
+            </ul>
+        </li>
+        <li>2.0.1
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.1</li>
+                <li>Plugin intentions/quick fixes have now lower priority.</li>
+            </ul>
+        </li>
+        <li>2.0.0
+            <br>
+            <ul>
+                <li>Based on detekt 1.23.0</li>
+                <li>Support file and directory analysis from project explorer, editor and tool window.</li>
+                <li>"Enable detekt" was renamed to "Enable background analysis" to make it clearer that it activates the on-the-fly analysis while coding.</li>
+                <li>Introduce `detekt doc` tool window for quick access to detekt's documentation.</li>
+                <ul>
+                    <li>Introduce `Show detekt Rules Documentation` action to open tool window with style rules set pre-selected.</li>
+                    <li>Introduce `Show detek Changelog` action to open tool window with the changelog of current detekt version.</li>
+                </ul>
+                <li>Allow to redirect detekt's output to IntelliJ log file.</li>
+                <li>Drop support for Android Studio 2021.3. Android Studio 2022.1.1 Patch 2 is the new minimal supported IntelliJ Platform version.</li>
+                <li>Drop support for settings migration from version < 1.21.1. Make sure to update from 1.21.2+ or be prepared to renew your settings.</li>
+                <li>Drop naming scheme based on included detekt version</li>
+                <ul>
+                    <li>This makes sure the IntelliJ plugin can make feature release with proper semantic versioning.</li>
+                    <li>The included detekt version will always appear in the current changelog entry for reference.</li>
+                </ul>
+            </ul>
+        </li>
+        <li>1.22.2
+            <br>
+            <ul>
+                <li>Support ordered configuration files to be able to override rules deterministically.</li>
+            </ul>
+        </li>
+       <li>1.22.1
+            <br>
+            <ul>
+                <li>Deactivate error reporting for now due to unsolved unrelated reporting of Kotlin issues.</li>
+            </ul>
+        </li>
+        <li>1.22.0
+            <br>
+            <ul>
+                <li>Update to detekt 1.22.0</li>
+                <li>Fix logging process cancellation exceptions</li>
+                <li>Allow configuration files with yaml extension</li>
+            </ul>
+        </li>
+        <li>1.21.3
+            <br>
+            <span>Please do not report issues anymore where IntelliJ/Android Studio blames the detekt plugin for an exception without any detekt stacktrace.</span>
+            <br>
+            <span>This is a known issue and will take some time to investigate - https://github.com/detekt/detekt-intellij-plugin/issues/271</span>
+            <ul>
+                <li>Fix a situation where it could happen that the config or plugin jar paths got corrupt and reference the containing directory - [#272](https://github.com/detekt/detekt-intellij-plugin/pull/272)</li>
+            </ul>
+        </li>
+        <li>1.21.2
+            <br>
+            <ul>
+                <li>Do not allow autocorrect action on read-only files</li>
+                <li>Introduce some debug logging to find out if stack traces without detekt package are thrown by our plugin</li>
+            </ul>
+        </li>
+        <li>1.21.1
+            <br>
+            <ul>
+                <li>Settings UI overhaul - [#240](https://github.com/detekt/detekt-intellij-plugin/pull/240)</li>
+                <li>File paths should be platform-independent - [#231](https://github.com/detekt/detekt-intellij-plugin/issues/231)</li>
+                <li>Store configuration file path as relative to the project root - [#135](https://github.com/detekt/detekt-intellij-plugin/issues/135)</li>
+                <li>Multiple configuration files are not supported - [#117](https://github.com/detekt/detekt-intellij-plugin/issues/117)</li>
+            </ul>
+        </li>
+        <li>1.21.0
+            <br>
+            <ul>
+                <li>Update to detekt 1.21.0 - [#155](https://github.com/detekt/detekt-intellij-plugin/pull/175)</li>
+                <li>IntelliJ Detekt plugin should be enabled by default - [115](https://github.com/detekt/detekt-intellij-plugin/issues/115)</li>
+                <li>Introduce file level annotations to not mark the whole file - [173](https://github.com/detekt/detekt-intellij-plugin/issues/173)</li>
+                <li>Introduce an autoCorrect action - [142](https://github.com/detekt/detekt-intellij-plugin/issues/142)</li>
+                <li>Fix some errors when reading or writing source code - [159](https://github.com/detekt/detekt-intellij-plugin/issues/159)</li>
+                <li>More finding position fixes from detekt core</li>
+                <li>Using a yaml configuration file generated by a detekt version higher than the IntelliJ plugin version should not throw an InvalidConfigurationError anymore</li>
+            </ul>
+        </li>
+        <li>1.20.1
+            <br>
+            <ul>
+                <li>Fix crash when formatting rule set was used</li>
+                <li>Support for reporting plugin errors</li>
+                <li>Allow to enable detekt through the action menu via a toggle action</li>
+            </ul>
+        </li>
+        <li>1.20.0 - Based on detekt 1.20.0.</li>
+        <li>1.19.0 - Based on detekt 1.19.0.</li>
+        <li>1.18.1 - Based on detekt 1.18.1.</li>
+        <li>1.17.1 - Based on detekt 1.17.1.</li>
+        <li>1.16.0 - Based on detekt 1.16.0.</li>
+        <li>1.15.0 - Based on detekt 1.15.0.</li>
+        <li>1.6.1 - Based on detekt 1.14.2.</li>
+        <li>1.6.0 - Based on detekt 1.14.1.</li>
+        <li>1.5.0 - Based on detekt 1.11.0.</li>
+        <li>1.4.0 - Based on detekt 1.11.0-RC2.</li>
+        <li>1.3.0 - Based on detekt 1.10.0.</li>
+        <li>1.2.0 - Based on detekt 1.9.1.</li>
+        <li>1.1.0 - Based on detekt 1.8.0.</li>
+        <li>1.0.0 - First stable release. Based on detekt 1.7.4.</li>
+      </ul>
+      ]]>
+    </change-notes>
+
+</idea-plugin>
