@@ -1,0 +1,5 @@
+<idea-plugin>
+  <id>org.demo.harness.malformed</id>
+  <name>Harness Malformed Descriptor
+  <version>1.0.0
+</idea-plugin>

@@ -1,0 +1,17 @@
+<idea-plugin package="org.demo.harness.v2">
+  <id>org.demo.harness.v2</id>
+  <name>Harness Content Modules</name>
+  <version>1.0.0</version>
+  <vendor email="dev@example.com" url="https://example.com">Harness Fixtures Vendor</vendor>
+  <description><![CDATA[
+    A purpose-built fixture for the compatibility regression harness of IntelliJ Plugin Verifier.
+    It uses the version 2 plugin model with content modules and module dependencies.
+  ]]></description>
+  <idea-version since-build="231.1" until-build="243.*"/>
+  <dependencies>
+    <plugin id="com.intellij.modules.lang"/>
+  </dependencies>
+  <content>
+    <module name="org.demo.harness.v2.extra"/>
+  </content>
+</idea-plugin>

@@ -1,0 +1,10 @@
+{
+  "name": "Harness Dark",
+  "dark": true,
+  "author": "Harness Fixtures Vendor",
+  "ui": {
+    "*": {
+      "background": "#2b2b2b"
+    }
+  }
+}
