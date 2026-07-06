@@ -1,0 +1,10 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <compiler.buildTargetScopeProvider implementation="org.asciidoc.intellij.builder.AsciiDocTargetScopeProvider"/>
+    <psi.referenceContributor language="AsciiDoc" implementation="org.asciidoc.intellij.findUsages.AsciiDocJavaReferenceContributor"/>
+    <lang.findUsagesProvider language="AsciiDoc" implementationClass="org.asciidoc.intellij.findUsages.AsciiDocFindJavaProvider"/>
+    <referencesSearch implementation="org.asciidoc.intellij.findUsages.AsciiDocJavaReferencesSearch"/>
+    <useScopeEnlarger implementation="org.asciidoc.intellij.indexer.AsciiDocJavaScopeEnlarger" />
+  </extensions>
+</idea-plugin>
+

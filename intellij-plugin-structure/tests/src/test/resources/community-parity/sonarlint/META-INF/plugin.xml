@@ -1,0 +1,410 @@
+<!--
+
+    SonarLint for IntelliJ IDEA
+    Copyright (C) SonarSource Sàrl
+    sonarlint@sonarsource.com
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
+
+-->
+<idea-plugin url="https://docs.sonarsource.com/sonarqube-for-intellij/" require-restart="true">
+    <id>org.sonarlint.idea</id>
+    <name>SonarQube for IDE</name>
+    <version>${project.version}</version>
+    <vendor url="https://www.sonarsource.com">SonarSource</vendor>
+
+    <description><![CDATA[
+        <html>
+            <p>
+                SonarQube for IDE (formerly SonarLint) by <a href="https://www.sonarsource.com/">Sonar</a> is a free, sophisticated static analysis tool that
+                enhances both your code quality and security. Start analyzing your code early—as you write or generate it.
+                Local analysis automatically identifies quality and security issues in real-time, even with AI-generated code.
+                Then, fix any issues found using a QuickFix or the AI CodeFix feature before pushing to your SCM.
+                This assures your code meets your quality standards and is safe for running in production.
+            </p>
+            <br/>
+            <p>
+                Want to understand the "why" behind an issue? SonarQube for IDE goes beyond simply highlighting problems,
+                providing detailed contextual information to level up your coding experience and acting as your personal coding tutor.
+            </p>
+            <br/>
+            <p>
+                When connected to <a href="https://www.sonarsource.com/products/sonarqube/">SonarQube Server</a>
+                or <a href="https://www.sonarsource.com/products/sonarcloud/">SonarQube Cloud</a> (you can create a <a href="https://www.sonarsource.com/products/sonarcloud/signup/">free SonarQube Cloud</a>
+                account to get started!), it becomes a powerful, unified code quality platform for your entire team throughout your software development lifecycle.
+                This connection enables sharing of consistent language rulesets and project settings,
+                and unlocks analysis of deeply hidden security issues, fostering collaboration and code uniformity.
+            </p>
+            <br/>
+            <p>
+                SonarQube for IDE is the only extension you need in your JetBrains IDE for ensuring both code quality and security.
+                It supports a wide range of languages, including C, C++, Java, Go, JavaScript, TypeScript, Python, C#, Kotlin, Ruby, HTML,
+                CSS, PHP, and PL/SQL. Please check out our <a href="https://docs.sonarsource.com/sonarqube-for-intellij/using/rules/">documentation</a>
+                for the complete list of supported languages, rules and secret detection capabilities.
+            </p>
+            <br/>
+            <br/>
+            <p>
+                Get started today for free. Check the <a href="https://docs.sonarsource.com/sonarqube-for-intellij/getting-started/requirements/">Requirements</a> and <a href="https://docs.sonarsource.com/sonarqube-for-intellij/getting-started/installation/">Installation</a>
+                pages— download SonarQube for IDE in the Extension Marketplace and enjoy safe coding!
+            </p>
+        </html>
+      ]]></description>
+
+    <change-notes><![CDATA[
+      <ul>
+        <li>12.4 - Fixed IDE UI freezes and duplicate findings in Rider. 3 new JUnit 5 rules for Java. New security and accessibility rules for HTML. Improved Python analysis. Fewer FPs for Java, PHP, Go, and HTML.</li>
+        <li>12.3 - Add multi-selection and bulk copy of findings in the Findings and Report tabs. Optimized branch-matching resolution per repository. One new rule for Java. New Logic Apps rules for Azure Resource Manager. Add support for bun, Deno, and pnpm dependency detection. Fewer FPs across many languages.</li>
+        <li>12.2.2 - Fix C# analysis in connected mode.</li>
+        <li>12.2.1 - Fixed synchronization failure when the server returns dependency risks of Malware type.</li>
+        <li>12.2 - On-demand download of C# analysis dependencies and C/C++ analyzer.  Security Hotspots in PHP have been migrated to security issues. Fewer FPs across many languages.</li>
+        <li>12.1 - File exclusions are now properly applied across all analysis types. Fixed a rare crash during pre-commit analysis, resolved memory leaks, and improved overall stability. Bug fixes, fewer FPs and improvements for JS, C# and Python.</li>
+        <li>12.0.1 - Fixed an issue in Rider 2026.1 where analysis failed due to changes in the platform APIs.</li>
+        <li>12.0 - SonarQube for IDE now requires Java 21, raising the minimal supported platform version to 2024.2. New rules for HTML, CFamily, & IaC domains, reduced False-Positives in secrets scanning</li>
+        <li>11.15 - Introduction of a new 'Supported Languages' page. Support Java 25 with new rules. 8 new rules for Python. Bug fixes, fewer FPs, FNs, and improvements for Java, PHP and Python.</li>
+        <li>11.14 - 2 new rules for Java. Fixed a noisy error related to parsing HTTP responses. Bug fixes, fewer FPs, FNs, and improvements for JS/TS, Java, Python, XML, secret and C#.</li>
+        <li>11.13 - New rules for FastAPI and Flask framework for Python. Fixed analysis failure on empty kustomization files. Fixed errors related to read access. Avoid locking git files. Fixed a race-condition issue where analyzers would not get correctly loaded. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.12 - 10 new QuickFixes for JS/TS. Users can now quickly generate a new token if their current one is invalid. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.11.1 - Minor bug fix. Remove deprecated code.</li>
+        <li>11.11 - Change Flight Recorder implementation to be fully local. Better parsing of scripts embedded in CI/Docker files. Bug fixes, fewer FPs and improvements for many languages and secret detection.</li>
+        <li>11.10 - Bug fixes, fewer FPs and improvements for Python.</li>
+        <li>11.9 - Added detection for 3 new secret patterns. 7 new GitHub Actions rules. Support parsing of Heredoc in bash. Better support for Helm templates. Support detection of xAI API keys. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.8 – New storage system.</li>
+        <li>11.7 – Added Bash analysis support with Docker and GitHub Actions. Improved detection of frameworks imported in PHP files. 8 new C/C++ rules, including 7 MISRA C++:2023 rules. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.6 - Added SLNX support in Rider. Introduced runtime downloading of the C/C++ analyzer. 6 new rules for Bash. 7 new rules for Python 3.14. Enhanced analysis for WordPress frameworks. Improved annotation performance on large files. Refined the behavior of opened/closed finding nodes in the tool window. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.5 - Fixed an issue where exclusion settings did not work in Rider. Resolved a problem causing Go analysis to hang. Disabled secret detection in test files and improved overall secret analysis performance. Added new secret patterns for HTTP authentication. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.4 - 58 new QuickFixes for JS/TS/CSS. Support of Python 3.14. Support of PHP 8.5. 14 new rules for C++. 4 new rules for HTML. Fixed a potential memory leak on running analysis for closed projects. Bug fixes, fewer FPs and improvements for many languages and secret detection.</li>
+        <li>11.3.1 - Resolved an issue where users were unable to successfully open an issue from SonarQube Cloud. Enhanced UX and clearer messaging in case of credentials retrieval failure.</li>
+        <li>11.3 - Performance improvement when analysis multiple files at once. 9 new Python rules for PyTorch. Fixed an issue related to the credentials' migration. Fix various FP's in secret detection and for Java.</li>
+        <li>11.2 – Dropped support for Node.js 18 (minimum required version is now 20.12). Improved analysis performance with Git optimizations and reduced file-system reads. Enhanced secret detection for PKCS12 files. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>11.1 - Support of dependency risks for SonarQube Cloud. Introduction of a Flight Recorder mode to help detect and report issues on demand. Enable parallel execution of rules in Python. Support for Go 1.25. 4 new rules for PyTorch. 5 new MISRA rules for C++. Improved secrets' detection. Fewer FPs and FNs for Python, Go, and secrets.</li>
+        <li>11.0.1 - Various UI/UX refinements to the unified view with improved rendering performance. Fixed sorting issues in findings and incorrect highlighting across files.</li>
+        <li>11.0 - Raise minimal supported version to 2023.1.7. Complete UI refactor with unified view, filtering, and stacked reports. Pre-commit analysis now always skippable even in case of errors. Fixed an issue where automatic analysis would not be disabled upon restart. 4 new MISRA rules for C++. Fewer FPs for JS/TS analysis.</li>
+        <li>10.30 - Fixed an issue where the pre-commit analysis would be stuck. Introduce new rules for AWS Lambda functions in Python. Support NOSONAR for Python and Go rules suppression. 9 new rules for GitHub Actions. 3 new Security Hotspots for secrets in connected mode. UI/UX improvements on the Dependency Risks tab. Fewer FPs for PHP, C#, and secrets.</li>
+        <li>10.29 - Introduction of a new 'Dependency Risks' tab for displaying dependency risks in connected mode (requires SonarQube Server 2025.4 Enterprise or higher). Improved reliability of binding suggestions. Reduced the number of IDE notifications. Early access for MISRA rules. Less FPs and FNs for Java.</li>
+        <li>10.28 - Minimal supported Node.js version needed for JS/TS/CSS analysis is 18.20.0, 20.12.0, or 21.4.0. Add detection for 102 new secret patterns, and enable support of secret detection for the Kotlin language. Mitigate a performance regression on the .NET analyzer. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.27.1 - Fix an issue where disabling automatic analysis would not be taken into account upon restart.</li>
+        <li>10.27 - Fix an issue where analysis would never finish. Internal refactoring of the analysis workflow. 4 new rules and 1 new QuickFix for Java.</li>
+        <li>10.26 - Support IAR compiler for C++. Allow sharing connected mode information for overridden modules. Add 33 new rules and 9 quick fixes for Python. 1 new rule about secrets and fewer FPs for C#.</li>
+        <li>10.25 - Add 2 new rules for Java 23. Improve consistency when opening an issue from SonarQube Server or Cloud. Bug fixes and fewer FPs for Go and JS/TS.</li>
+        <li>10.24 - Introduce AI CodeFix when connected to SonarQube Server, starting from 2025.3. Fixed an issue where SonarQube for IDE would not use the Node.js path saved in the settings upon restart. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.23 - 5 new rules for Python PySpark library. ARM64 support for Go. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.22 - Improve the analysis performance when multiple issues are detected in a file. 3 new rules for Java. 1 new rule for Python. Fix an issue where a taint vulnerability could not be opened from SonarQube (Server, Cloud). Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.21 - Introduction of a new tab 'Help & Feedback' to provide support and guidance. Fix an issue where a file path with non-ASCII characters would not get analyzed. 7 new rules for Kotlin. 2 new rules for Java. 1 new rule for XML. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.20 - UI/UX improvements for AI CodeFix. Fix an issue where the automatic detection of Node.js on Windows would not work. Fix an issue where file exclusion would not work on Windows. Correctly resolve the relative path of files. 133 new secret detection rules. Bug fixes for C/C++ analysis.</li>
+        <li>10.19 - Allow generating AI CodeFix directly in the IDE when connected to an eligible SonarQube Cloud organization. Fix an issue where C projects would not be analyzed on CLion Nova. SonarQube for IDE now automatically uses Node.js set within the IDE settings when available. Introduce a new walkthrough introduction page for new users. Early access for SonarQube Cloud US region. Kotlin analysis now leverages K2. Improve the UI when no issues are visible due to filtering.</li>
+        <li>10.18 - Improve speed of analysis by leveraging native git, this is particularly significant on git repositories with a large history. 9 new rules for Java. Fixed an issue where some files on a multi-module project would wrongly get ignored. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.17 - Support of Go 1.23. 1 new rule for C++. A parsing error for Go is not reported anymore by default. Optimize triggering of analysis and avoid unnecessary computations. Do not report issues for partial classes with Razor. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.16.1 - Fix of an internal compatibility issue with SonarQube Server</li>
+        <li>10.16 - Support analysis of Ansible files. Improve performance by analyzing focused files only. Fixed an issue where SonarQube for IDE would appear as a Java program in the menu bar on macOS. Fixed a noisy error that could happen when opening a project.</li>
+        <li>10.15 - 1 new QuickFix for Java. Fix of a performance regression on Python. Fix a noisy log error. Avoid symbol errors on CLion. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.14.1 - Fix unwanted loading bar appearance for computing branch information. Fix connection issue for SonarQube Server versions 10.0 - 10.4.</li>
+        <li>10.14 - Support analysis of Jupyter Notebook files. Increase JS/TS analysis speed and fix an issue where many temporary files would be created. Drop support for username/password authentication.</li>
+        <li>10.13.1 - Include a transparent and dark version of the plugin icon. Fix a noisy log error about a missing ProgressIndicator. Improve the tool window icon behavior to reflect the current number of issues in the file.</li>
+        <li>10.13 - SonarLint becomes SonarQube for IDE. Support for Standard and MQR mode. Fix an issue where the disk space used would grow indefinitely. Avoid an issue where the file system cache would run out of memory. Multiple performance improvements to the JS/TS analyzer. 7 new C++ rules and 1 new Security Hotspot C++ rule. Improve the tolerance to syntax errors when parsing Java switch expressions. Detection of secrets in PHP and C#. Support of Python 3.13. Deprecate the usage of Node.js 18 for JS/TS analysis. 1 new rule for Java. Support of more Java rules on test code. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.12 - Support of Java 22 analysis. Automatically analyze opened files on remote environments. 2 new quick fixes for C++. Support for WindRiver GNU C++ compiler for arm. Improve analysis triggering performance. Many fixes on various graphical elements. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.11.1 - Allow to open AI fix suggestions coming from SonarQube or SonarCloud. Avoid a rare issue when VFS is closed.</li>
+        <li>10.11 - Optimize the triggering of analysis and automatically cancel redundant ones. Avoid an error related to the .gitignore file. Fix an issue where a custom Node.js path would not be considered. Optimize SonarLint initialization performance and reduce the file system cache usage. Improve error feedback with Connected Mode. 1 new PHP rule. 7 new Python rules related to PyTorch. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.10 - Improve SonarLint performance and optimize memory usage. Refactor thread management to avoid UI freezes. Avoid errors of type 'No file to analyze'. Support detection of Micronaut configuration issues. 6 new JS/TS rules. Introduce new INFO and BLOCKER severities. Improve UI feedback when lacking permission with SonarQube or SonarCloud. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.9 - Support analysis of Helm files. Improve analysis consistency on Rider. 7 new C++23 rules and C++23 support. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.8.1 - Correctly display the current file analysis results on dev containers. Fix an issue where triggering a report analysis would disappear. Fix a problem where issues from another project would appear in the report.</li>
+        <li>10.8 - Handle "Open in IDE" requests from SonarCloud. Detection of 34 new secrets. 11 new rules for Kubernetes. 20 new Java rules enabled on test code. Fix an issue in Rider where analysis would never finish. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.7 - Allow users to focus on new code without connected mode. Help users to generate a token when creating a new connection to SonarCloud. Support for more complex rules in Python and Java. Support for multiple project-level issues on C#. Support for C/C++ analysis from Linux ARM. Fix an issue in Rider that prevented file analysis. Fix an issue where files with special characters would not get analyzed. Avoid an issue in CLion when WSL is not supported. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.6.2 - Fix an issue on Windows preventing analysis from running in CLion. Fix an issue in Rider when no git repositories are found. Improve performance and avoid running unnecessary analysis.</li>
+        <li>10.6.1 - Fix an issue preventing analysis from running when multiple projects are opened simultaneously.</li>
+        <li>10.6 - Support of CLion Nova. Deprecate authentication with login/password. Improve the shared connected mode settings compatibility on C# projects with Visual Studio and VS Code. 5 new rules for Python. Support for Spring configuration files. Support of 21 Java rules on test sources. 7 new rules for C#. 1 new rule for ASP.NET. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.5 - Allow users to share connected mode settings among contributors. Remove support for Node.js 16 (18 required). 21 new rules for Java and improved support for Spring. 14 new rules for Python. Support analysis of C++23. 1 new rule for token detection. 18 new rules for C#. 4 new accessibility rules for JS/TS. 6 new accessibility rules for HTML. Bug fixes, fewer FPs and improvements for many languages. Various bug fixes and performance improvements.</li>
+        <li>10.4.2 - Fix an issue where rule configuration is not loaded at startup. Stop the creation of configuration files at module level for storing module IDs. Improve performance during synchronization on large projects. Various bug fixes.</li>
+        <li>10.4.1 - Fix various errors when starting the SonarLint service. Fix an error when using a proxy.</li>
+        <li>10.4 - SonarLint now runs in a separate process. Support of Java 21 and 2 new Java rules. 17 new accessibility rules for HTML. 2 new C++ rules. 2 new quick fixes for Python. 1 new JS/TS rule. Various UI fixes and improvements. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.3 - Allow detection of custom secrets in connected mode starting from SonarQube 10.4. Set up a connection in one click starting from SonarQube 10.4 when using the Open in IDE feature. Fix memory leaks and UI freezes. Support Jakarta namespace. 9 new C++ MISRA 2023 rules. Remove support for Node.js 14 and deprecate support for Node.js 16 and Node.js 17. Support TypeScript 5.3. 5 new rules for JavaScript. 8 new rules for Kubernetes. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.2.1 - Fix an error when using Rider or CLion in connected mode with SonarCloud.</li>
+        <li>10.2 - Support for Gradle Kotlin DSL and C# 12. 5 new Spring Boot rules. 1 new rule for Python. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.1.1 - Fix a potential deadlock and UI freeze.</li>
+        <li>10.1 - 9 new Java rules related to Spring Boot, 1 new quick fix. 17 new accessibility rules for JSX. 6 new Kotlin rules. Support for Python 3.12 syntax, add 5 related rules, add 3 new Security Hotspots. 2 new C++ MISRA 2023 rules, support for Docker toolchain in CLion. Support for .NET 8 in Rider. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>10.0.1 - Fix an error when opening an issue from SonarQube. Fix potential UI-freeze.</li>
+        <li>10.0 - Raise minimal supported version to 2022.3.1 and Java 17. Allow to reopen taint vulnerabilities. Handle "Open in IDE" requests from SonarQube. Synchronize issues and Security Hotspots in real-time from SonarCloud. 5 new rules for Python. 6 new rules for Java. 29 new rules for JavaScript. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>9.1 - Lets users focus on new code in connected mode. Support of quick fixes preview. 1 new quick fix for JS/TS. 2 new C++ MISRA 2023 rules. Detection of 42 new secrets. 8 new rules and 3 new quick fixes for Python. 16 new rules for Docker. Support for Ruby 3.2.0. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>9.0 - Support Clean Code attributes and software qualities. Allow the reopening of resolved issues and add ability to resolve issues not yet known by SonarQube (version 10.2+). Support of PHP 8.3. 9 new rules for Python. 15 new rules for JS/TS. Detection of 50 new patterns and 22 new types for secrets. Support of Bicep in Azure. 5 new rules for Azure Resource Manager templates. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>8.5.1 - Fix an error when creating or updating a connection to SonarCloud. Fix SSL issues related to our HTTP client. Fix an error when using a proxy.</li>
+        <li>8.5 - Support PL/SQL analysis in connected mode when 'Database Tools and SQL' plugin is enabled. 43 new MISRA rules for C++. 12 new rules for CloudFormation, Docker, Kubernetes and Terraform. 9 new rules and one quick fix for C# in Rider. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>8.4 - Allow marking issues existing on SonarQube/SonarCloud as resolved. Support near real-time synchronization of Security Hotspots with SonarQube. Support syntax highlighting in rule configuration. 5 new rules and 1 quick fix for JavaScript. 2 new rules for C++. 1 new rule for C# and support .NET 7 in Rider. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>8.3 - Allow changing status of Security Hotspots. Support Security Hotspots when connected to SonarCloud. Support analysis of Go not only in GoLand but also when using the Go plugin in IntelliJ IDEA Ultimate. 17 new rules for JavaScript. 6 new rules for PHP. 10 new rules, 1 new quick fix for Python. 9 new rules for Kotlin. 11 new rules for C# in Rider. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>8.2 - Support syntax highlighting and diff view for code examples. Add support for CloudFormation, Docker, Kubernetes and Terraform. 3 new rules for Java. 8 new rules for JavaScript. 2 new rules for C# in Rider. 9 new rules for Kotlin. 11 new rules, 3 new quick fixes for Python. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>8.1 - Support analysis of Go in GoLand. Support for tiarmclang compiler, Kotlin 1.8 and IPython syntax. 6 new rules for C# in Rider. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>8.0 - Raise minimal supported version to 2021.3. Report Security Hotspots locally when connected to SonarQube 9.7+. Support of JavaScript analysis in HTML files. Support for clang-cl and Microchip compilers. New quick fixes for 11 Java rules. New quick fix for a C++ rule. New quick fixes for 17 Python rules. 6 new rules for C# in Rider. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>7.4 - Display Clean Code principles in rule descriptions. 13 new rules around std::format for C++. 1 new rule for Java. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>7.3 - Improved display of rule descriptions. New react performance rules. Analyze CSS files. New Kotlin rules. 6 new C++20 rules. Support Python 3.11. Analyze JS, TS, CSS and HTML in Rider. 1 new rule for C# in Rider. Many rules improvements.</li>
+        <li>7.2.1 - Fix an error when selecting issues or taint vulnerabilities in the tool window in 2022.3.</li>
+        <li>7.2 - Help users to generate a token when creating a new connection. Add quick fixes in Rider for C#. 2 new rules, 4 new quick fixes for Python. 1 new rule for credentials detection for Java. Support analysis of JS in YAML files. New AWS CDK rules. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>7.1.1 - Fix security issue when opening a hotspot from SonarQube.</li>
+        <li>7.1 - Support analysis of Kotlin 1.7.10. 8 new rules around unit tests for Python. Support analysis of PHP 8.2. Support analysis of TypeScript 4.8. Remove support for Node.JS 12 and deprecate support for Node.JS 14. Add 7 rules for React. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>7.0 - Reworked connected mode storage. Auto-sync of issues with SonarQube 9.6+.</li>
+        <li>6.8 - Use embedded JS/TS/HTML/Kotlin/Ruby/XML analyzer even in connected mode. Introduce quick fixes for 7 Python rules. 15 new rules for Java (6 for regular expressions, 7 for AWS Cloud functions). 5 new rules for JS/TS. Add support for TypeScript 4.7. 3 new rules for C/C++. Add support for Ruby 3.1. New and improved C# rules. Support for C# 10. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>6.7 - Quick fixes for 3 C/C++ and 30 JS/TS rules. 17 new rules for Python (8 for regular expressions). Support for TypeScript 4.6. Activate JS rule S1172 by default. Activate C# rule S2222 by default. Remove legacy C/C++ rule keys. Bug fixes, fewer FPs and improvements for many languages.</li>
+        <li>6.6 - Synchronize issues and taint vulnerabilities from the appropriate branch in connected mode. Subscribe for server events to update active rules. Quick fixes for 15 C/C++ and 23 JS/TS rules. Support TypeScript 4.5. Drop support for Node 10. One more rule for C#. Performance improvements in Rider.</li>
+        <li>6.5.1 - Fix error message at startup.</li>
+        <li>6.5 - Deprecation of Node.js &lt; 12.22 for JS/TS analyzes. Embed the XML analyzer. 5 new rules for Java. 9 new rules for PHP around regexes. Bug fixes, fewer FPs and improvements for many languages</li>
+        <li>6.4.3 - Fewer false-negatives and false-positives for C/C++.</li>
+        <li>6.4.2 - Fix potential UI-freeze when loading/unloading modules.</li>
+        <li>6.4.1 - Fix error in connected mode if custom plugin have markdown rule description.</li>
+        <li>6.4 - Automatically synchronize rules and settings from server. New JS/TS rules for tests. Support PHP 8.1. New rules for regexp in Python. Support Python 3.10. New rules for Kotlin. Support Kotlin 1.6. Support Ruby 3.0.3. 10 new rules for C++20 coroutines, quick fixes for 3 more C++ rules. Support .NET 6 in Rider. Many rules improvements.</li>
+        <li>6.3.1 - Fix connected mode in Rider.</li>
+        <li>6.3 - Quick fixes for 43 C/C++ rules.</li>
+        <li>6.2 - 9 new rules for regular expressions in PHP. 1 new vulnerability detection rule for Android. Fixes for HTTP protocol issues and UI improvements.</li>
+        <li>6.1 - Allow binding individual modules or attached projects to SonarQube/SonarCloud. New rules for regular expressions in PHP, JS and TS. Wordpress misconfiguration rules in PHP. 7 new rules for C++20. Many rules improvements.</li>
+        <li>6.0 - Change plugin JVM runtime requirement to 11+</li>
+        <li>5.3 - Introduce quick fixes for 40 Java rules. Remote and WSL toolchains support for CLion. 1 new rule for Java, 4 for C/C++, 5 for secrets detection. Rules improvements for Java and C++.</li>
+        <li>5.2 - New Java 16 specific rules. Rules improvements for PHP. Performance improvement for Python analysis. Many bug fixes and small improvements.</li>
+        <li>5.1 - Support TS 4.3 and Vue.js. MSVC support for CLion. Rules improvements for Java, Kotlin, C/C++ and JS/TS.</li>
+        <li>5.0.1 - Fix exceptions in registration of application listeners and during analysis on older versions of the IntelliJ platform. Fix UI freezes.</li>
+        <li>5.0 - Improve precision of Python analyzes thanks to cross-module resolution of symbols. Drop support of SonarQube < 7.9 for connected mode. Fixed false-positives and false-negatives in C/C++ analysis. Bug fixes and improvements.</li>
+        <li>4.16 - 3 new rules for C++20. Improved JS/TS rules. Fixed false positive in HTML analysis. Improved PHP rules.</li>
+        <li>4.15 - Support analysis of C/C++ in CLion. Support TypeScript 4.1 and 4.2. Rules improvements for Java and Python. Minimal supported version is 2019.3.</li>
+        <li>4.14.2 - Fix exceptions thrown during analysis and work around an issue with latest EAP.</li>
+        <li>4.14.1 - Fix an error occurring after each analysis. Fix the regression on UI responsiveness.</li>
+        <li>4.14 - New rules for regexp in Java, Java 15 support. All JS rules now based on the TypeScript parser. Rules improvements for PHP and Python. Support for Ruby 3.0.0. Support of Python 3.9. Investigate taint vulnerabilities detected by SonarQube 8.6+ or SonarCloud.</li>
+        <li>4.13 - New or improved rules for access control or authentication in Java. Security rules for JS/TS. Support of PHP 8, improved rules. Updated Kotlin and Ruby analyzers, supporting latest language features and improved rules. Updated HTML analyzer with improved rules. Reworked server notifications. Review a Security Hotspot within its context.</li>
+        <li>4.12 - Lots of new rules for Java (including test code), support analysis of Java 14. 20 new rules for PHP, including 13 related to unit tests. 2 new rules for JavaScript. 3 new rules for Python. Bug fixes and improvements.</li>
+        <li>4.11 - Improve issues, flows and secondary locations navigation and highlighting. Show secondary location indexes in the editor. Add 'Show rule description' and 'Show data flow/issue locations' contextual actions. Relax search criteria in rule configuration filter. Show effective rule parameter in the rule description panel. Bug fixes and improvements.</li>
+        <li>4.10 - Fix duplicated annotations for PHP files. Display rule severity defined in the quality profile in connected mode. Fix analysis failure with JSP files. Bug fixes and improvements for JS files. 4 new rules (3 security related), bug fixes and improvements for PHP files.</li>
+        <li>4.9 - Many new rules about JUnit and AssertJ for Java test files. 10 new rules for PHP. 22 new rules for Python and support of Typeshed packages. Preparatory changes for dynamic plugin installation.</li>
+        <li>4.8 - Configure rule parameters in IDE settings. Performance improvement and fewer false positives for PHP. 4 new vulnerability detection rules for Python.</li>
+        <li>4.7 - 2 new rules and performance improvements for Java. 2 new rules for Python.</li>
+        <li>4.6 - Enable analysis of TypeScript. 27 new rules for Python. Support for Python 3.8.</li>
+        <li>4.5.1 - Fix two regressions causing exception during analysis.</li>
+        <li>4.5 - 3 new rules and engine improvements for Python. New engine for Java, with support for Java 13 preview features.</li>
+        <li>4.4 - Ensure compatibility with JetBrains 2020.x release train. 22 new rules and engine improvements for Python. Support for PHP 7.4. New engine for JavaScript, 8 new rules.</li>
+        <li>4.3 - Supports SonarJS 6.x in connected mode. Updated issue type icons.</li>
+        <li>4.2 - Analyze HTML in Vue.js single file components. 8 new HTML rules. Support 'Ignore Issues on Files' and 'Ignore Issues in Blocks' in connected mode.</li>
+        <li>4.1.1 - Fix regression on quality profile in connected mode</li>
+        <li>4.1 - Enable analysis of HTML. Add support of XML in connected mode. 10 new Java rules.</li>
+        <li>4.0.2 - Fix error on startup registering actions affecting all IDEs other than IntelliJ</li>
+        <li>4.0.1 - Fix duplicated highlighting in WebStorm and connection to a server with more than 10k rules</li>
+        <li>4.0 - Improved matching of issues with SonarQube</li>
+        <li>3.5.1 - Fixed error with read access and repeated annotations</li>
+        <li>3.5 - Manage rules when not connected to SonarQube or SonarCloud</li>
+        <li>3.4.2 - Fix a regression in the SonarQube server configuration wizard</li>
+        <li>3.4.1 - Fix of several bugs: binding to SonarCloud organizations, support of Java 10, rendering of rule descriptions</li>
+        <li>3.4 - Update of embedded code analyzers. Fix analysis of files located outside of the project base directory</li>
+        <li>3.3 - Numerous improvements and UX enhancements.</li>
+        <li>3.2.1 - Bug fix for concurrent modification when all files of a module are excluded by server configuration</li>
+        <li>3.2 - Support excluding files from the automatic analysis</li>
+        <li>3.1 - Various minor improvements and bug fixes. Updated code analyzers.</li>
+        <li>3.0 - Avoid saving files when possible. Improve support of cancellation</li>
+        <li>2.10 - Support of SonarQube organizations</li>
+        <li>2.9 - New code analyzers included in standalone mode. Collection of usage statistics</li>
+        <li>2.8 - Analyze all files in project. New icons for issue types</li>
+        <li>2.7 - Display of secondary locations of issues</li>
+        <li>2.6 - Support of SSL certificates configured in IntelliJ</li>
+        <li>2.5 - Analysis of VCS changed files and notifications about binding update</li>
+        <li>2.4.3 - Bug fix for multi-module projects on Windows</li>
+        <li>2.4.2 - Fix resolved issues on windows and authentication</li>
+        <li>2.4.1 - Bug fix of Javascript in standalone mode.</li>
+        <li>2.4 - Hide issues that are resolved in SonarQube. Numerous bug fixes.</li>
+        <li>2.3.2 - Fix configuration of automatic trigger of analysis</li>
+        <li>2.3.1 - Bug fix for analysis configuration and performance improvements</li>
+        <li>2.3 - Support of exclusions in connected mode; Numerous bug fixes. Java 8 is now required to run SonarLint.</li>
+        <li>2.2 - Support of SonarQube LTS (4.5) and commercial plugins</li>
+        <li>2.1.1 - Bug fix for PHPStorm</li>
+        <li>2.1 - Various improvements and bug fixes</li>
+        <li>2.0.2 - Bug fix SLI-73</li>
+        <li>2.0.1 - Bug fixes</li>
+        <li>2.0 - Connect to a SonarQube server;</li>
+        <li>1.5 - Display SonarLint markers age;</li>
+        <li>1.4 - No internet required; Several bug fixes;</li>
+        <li>1.3 - Issues views; UI improvements;</li>
+        <li>1.2 - Automatic trigger of analysis; "NO SONAR" quick fix; configurable highlighting of issues;</li>
+        <li>1.1 - More precise issue location; trigger of analysis changed to on demand only; improved SonarLint console;</li>
+        <li>1.0 - On the fly SonarLint inspection</li>
+      </ul>
+      ]]>
+    </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.lang</depends>
+    <depends optional="true" config-file="plugin-git.xml">Git4Idea</depends>
+    <depends optional="true" config-file="plugin-go.xml">org.jetbrains.plugins.go</depends>
+    <depends optional="true" config-file="plugin-plsql.xml">com.intellij.database</depends>
+    <depends optional="true" config-file="plugin-java.xml">com.intellij.modules.java</depends>
+    <depends optional="true" config-file="plugin-clion.xml">com.intellij.cidr.lang</depends>
+    <depends optional="true" config-file="plugin-clion-cmake.xml">com.intellij.clion</depends>
+    <depends optional="true" config-file="plugin-clion-resharper.xml">org.jetbrains.plugins.clion.radler</depends>
+    <depends optional="true" config-file="plugin-rider.xml">com.intellij.modules.rider</depends>
+    <depends optional="true" config-file="plugin-jupyter.xml">intellij.jupyter</depends>
+    <depends optional="true" config-file="plugin-nodejs.xml">JavaScript</depends>
+
+    <projectListeners>
+        <listener class="org.sonarlint.intellij.module.ModuleChangeListener" topic="com.intellij.openapi.project.ModuleListener"/>
+    </projectListeners>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Welcome to SonarQube for IDE"
+                    anchor="left"
+                    icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.WALKTHROUGH_TOOLWINDOW_ICON"
+                    factoryClass="org.sonarlint.intellij.ui.walkthrough.SonarLintWalkthroughToolWindowFactory"/>
+        <toolWindow id="SonarQube for IDE" anchor="bottom"
+                    icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_EMPTY_TOOLWINDOW"
+                    factoryClass="org.sonarlint.intellij.ui.SonarLintToolWindowFactory" canCloseContents="true"/>
+        <applicationConfigurable groupId="tools" id="sonarlint" displayName="SonarQube for IDE"
+                                 instance="org.sonarlint.intellij.config.global.SonarLintGlobalConfigurable"/>
+        <projectConfigurable parentId="sonarlint" displayName="Project Settings"
+                             instance="org.sonarlint.intellij.config.project.SonarLintProjectConfigurable" nonDefaultProject="true"/>
+        <colorSettingsPage implementation="org.sonarlint.intellij.config.SonarLintColorSettingsPage"/>
+        <checkinHandlerFactory implementation="org.sonarlint.intellij.trigger.SonarLintCheckinHandlerFactory"/>
+        <additionalTextAttributes scheme="Default" file="colorSchemes/SonarLintDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/SonarLintDarcula.xml"/>
+        <editorActionHandler action="EditorEscape" implementationClass="org.sonarlint.intellij.editor.EscapeHandler"/>
+        <errorHandler implementation="org.sonarlint.intellij.errorsubmitter.BlameSonarSource"/>
+        <iw.actionProvider implementation="org.sonarlint.intellij.editor.SonarLintEditorWidgetActionProvider"/>
+
+      <!-- Empty language attribute corresponds to any language (see com.intellij.lang.Language.ANY) -->
+      <externalAnnotator language="" implementationClass="org.sonarlint.intellij.editor.SonarExternalAnnotator"/>
+
+      <!-- Cannot be moved to service annotation because state should stay exportable (currently not available with the new annotations) -->
+      <applicationService serviceImplementation="org.sonarlint.intellij.config.global.SonarLintGlobalSettingsStore"/>
+
+      <!-- Cannot be moved to service annotation because of getService on 'serviceInterface' -->
+      <applicationService serviceInterface="org.sonarlint.intellij.util.GlobalLogOutput"
+                          serviceImplementation="org.sonarlint.intellij.util.GlobalLogOutputImpl"
+                          testServiceImplementation="org.sonarlint.intellij.util.GlobalLogOutputTestImpl"/>
+
+      <!-- Cannot be moved to service annotation because of getService on 'serviceInterface' -->
+      <applicationService serviceInterface="org.sonarlint.intellij.fs.VirtualFileSystemEventsHandler"
+                          serviceImplementation="org.sonarlint.intellij.fs.DefaultVirtualFileSystemEventsHandler"
+                          testServiceImplementation="org.sonarlint.intellij.fs.VirtualFileSystemEventsTestHandler"/>
+
+      <!-- Cannot be moved to service annotation because of getService on 'serviceInterface' -->
+      <projectService serviceInterface="org.sonarlint.intellij.common.vcs.VcsService"
+                      serviceImplementation="org.sonarlint.intellij.vcs.DefaultVcsService"/>
+
+      <!-- Cannot be moved to service annotation because of getService on 'serviceInterface' -->
+      <projectService serviceInterface="org.sonarlint.intellij.common.ui.SonarLintConsole"
+                      serviceImplementation="org.sonarlint.intellij.ui.SonarLintConsoleImpl"
+                      testServiceImplementation="org.sonarlint.intellij.ui.SonarLintConsoleTestImpl"/>
+
+      <!-- Cannot be moved to service annotation because of module -->
+      <moduleService serviceImplementation="org.sonarlint.intellij.core.ModuleBindingManager"/>
+        <moduleService serviceImplementation="org.sonarlint.intellij.config.module.SonarLintModuleSettingsStore"/>
+
+        <postStartupActivity implementation="org.sonarlint.intellij.StartServicesOnProjectOpened"/>
+        <postStartupActivity implementation="org.sonarlint.intellij.OpenWelcomePageOnceOneProjectOpened"/>
+
+        <notificationGroup id="SonarQube for IDE: In Context Promotions"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Server Binding Errors"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Analyzer Requirement"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Secrets detection"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Taint vulnerabilities"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Open in IDE"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Server Notifications"
+                           displayType="STICKY_BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Binding Suggestions"
+                           displayType="STICKY_BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Security Hotspot Review"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Mark Issue as Resolved"
+                           displayType="BALLOON"/>
+        <notificationGroup id="SonarQube for IDE: Change Dependency Risk Status"
+                           displayType="BALLOON"/>
+        <pluginRepositoryAuthProvider implementation="org.sonarlint.intellij.dogfood.DogfoodPluginRepositoryAuthProvider"/>
+        <fileType name="SonarQube for IDE Properties" implementationClass="org.sonarlint.intellij.type.SonarLintPropertiesFileType"
+                  fileNames=".sonarcloud.properties;sonar-project.properties"/>
+        <fileType name="JSON" patterns="*.sonarlint/*.json" fileNames="connectedMode.json"/>
+    </extensions>
+
+    <extensionPoints>
+        <extensionPoint name="analysisConfiguration" interface="org.sonarlint.intellij.common.analysis.AnalysisConfigurator"
+                        dynamic="true"/>
+        <extensionPoint name="fileExclusionContributor" interface="org.sonarlint.intellij.common.analysis.FileExclusionContributor"
+                        dynamic="true"/>
+        <extensionPoint name="filesContributor" interface="org.sonarlint.intellij.common.analysis.FilesContributor" dynamic="true"/>
+        <extensionPoint name="vcsProvider" interface="org.sonarlint.intellij.common.vcs.VcsRepoProvider" dynamic="true"/>
+        <extensionPoint name="nodeJsProvider" interface="org.sonarlint.intellij.common.nodejs.NodeJsProvider" dynamic="true"/>
+    </extensionPoints>
+
+    <applicationListeners>
+        <listener class="org.sonarlint.intellij.fs.VirtualFileSystemListener" topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </applicationListeners>
+
+    <actions>
+        <!-- Some actions are defined in SonarLintActions so that they aren't registered in ActionManager -->
+      <group id="SonarLint.AnalyzeMenu" searchable="false" text="SonarQube for IDE" popup="false"
+             icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_13PX">
+            <separator/>
+        <!-- This group is programmatically added to AnalyzeMenu if it exists -->
+        </group>
+
+        <action id="SonarLint.AnalyzeFiles"
+                class="org.sonarlint.intellij.actions.SonarAnalyzeFilesAction"
+                text="Analyze with SonarQube for IDE"
+                description="Run SonarQube for IDE analysis on selected file(s)"
+                icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_13PX">
+            <keyboard-shortcut first-keystroke="shift ctrl S" keymap="$default"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="SonarLint.AnalyzeMenu"/>
+        </action>
+
+        <group id="SonarLint.ProjectViewPopupMenu" searchable="false" text="SonarQube for IDE" popup="true"
+               icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_13PX">
+            <reference ref="SonarLint.AnalyzeFiles"/>
+            <action id="SonarLint.Exclude"
+                    class="org.sonarlint.intellij.actions.ExcludeFileAction"
+                    text="Exclude from SonarQube for IDE Analysis"
+                    description="Adds resources to the list exclusions in the SonarQube for IDE project settings"
+                    icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_13PX">
+            </action>
+            <add-to-group group-id="ProjectViewPopupMenu"/>
+        </group>
+
+        <action id="SonarLint.AnalyzeChangedFiles"
+                class="org.sonarlint.intellij.actions.SonarAnalyzeChangedFilesAction"
+                text="Analyze VCS Changed Files with SonarQube for IDE"
+                description="Run a SonarQube for IDE analysis on VCS changed files"
+                icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_13PX">
+            <add-to-group group-id="SonarLint.AnalyzeMenu"/>
+        </action>
+
+        <action id="SonarLint.AnalyzeAllFiles"
+                class="org.sonarlint.intellij.actions.SonarAnalyzeAllFilesAction"
+                text="Analyze All Files with SonarQube for IDE"
+                description="Run a SonarQube for IDE analysis on all files in the project"
+                icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SONARQUBE_FOR_INTELLIJ_13PX">
+            <add-to-group group-id="SonarLint.AnalyzeMenu"/>
+        </action>
+
+        <action id="SonarLint.toolwindow.Cancel"
+                class="org.sonarlint.intellij.actions.SonarCancelAction"
+                text="Cancel SonarQube for IDE Analysis"
+                description="Cancel the SonarQube for IDE analysis running"
+                icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.SUSPEND">
+        </action>
+
+        <action id="SonarLint.toolwindow.Configure"
+                class="org.sonarlint.intellij.actions.SonarConfigureProject"
+                text="Configure SonarQube for IDE"
+                description="Configure SonarQube for IDE"
+                icon="org.sonarlint.intellij.ui.icons.SonarLintIcons.TOOLS">
+        </action>
+    </actions>
+</idea-plugin>
