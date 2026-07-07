@@ -56,21 +56,21 @@ class MethodAsm(override val containingClassFile: ClassFile, val asmNode: Method
 
       // Enums have two synthetic parameters
       val result = if (name == "<init>" && containingClassFile.isEnum) {
-        return parameterNames.mapIndexed { index, parameterName ->
+        parameterNames.mapIndexed { index, parameterName ->
           MethodParameter(parameterName, parameterAnnotations.getOrElse(index - 2) { emptyList() }.orEmpty())
         }
       }
 
       // Non-static inner classes have a synthetic parameters
       else if (name == "<init>" && containingClassFile.isNonStaticInnerClass()) {
-        return parameterNames.mapIndexed { index, parameterName ->
+        parameterNames.mapIndexed { index, parameterName ->
           MethodParameter(parameterName, parameterAnnotations.getOrElse(index - 1) { emptyList() }.orEmpty())
         }
       }
 
       //The simplest case: just zip parameter names and annotations.
       else if (parameterNames.size == parameterAnnotations.size) {
-        return parameterNames.zip(parameterAnnotations) { name, annotation ->
+        parameterNames.zip(parameterAnnotations) { name, annotation ->
           MethodParameter(name, annotation.orEmpty())
         }
       }
