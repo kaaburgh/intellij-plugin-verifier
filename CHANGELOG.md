@@ -6,7 +6,11 @@ Releases prior to January 2023 are tracked on the project GitHub [Releases Page]
 
 ### Added
 
+- Add a reproducible performance benchmark harness (`bench/`) that runs `check-plugin` over a deterministic synthetic corpus, attributes JFR samples to verifier phases, and gates behavior parity of verification reports
+
 ### Changed
+
+- Avoid materializing member locations (including method parameter-name extraction) on hot verification paths: class-origin usage filters compare containing class locations directly, `AbstractMethodVerifier` defers location construction to reported problems, and `MethodAsm.methodParameters` memoization now engages on all branches
 
 ### Fixed
 
