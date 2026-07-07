@@ -13,6 +13,11 @@ import com.jetbrains.pluginverifier.verifiers.resolution.Method
 import org.objectweb.asm.tree.AbstractInsnNode
 
 open class ClassLocationApiUsageFilter : ApiUsageFilter {
+  // The containing class location is obtained as 'containingClassFile.location'
+  // rather than 'location.containingClass': the resulting ClassLocation is
+  // identical by construction, but this avoids materializing the full member
+  // location - including method parameter name extraction - on this
+  // per-instruction hot path.
   override fun allow(
     classReference: ClassReference,
     invocationTarget: ClassFile,
@@ -20,8 +25,8 @@ open class ClassLocationApiUsageFilter : ApiUsageFilter {
     usageType: ClassUsageType,
     context: VerificationContext
   ): Boolean {
-    val usageHost = caller.location.containingClass
-    val apiHost = invocationTarget.location.containingClass
+    val usageHost = caller.containingClassFile.location
+    val apiHost = invocationTarget.location
     return allow(usageHost, apiHost)
   }
 
@@ -31,8 +36,8 @@ open class ClassLocationApiUsageFilter : ApiUsageFilter {
     callerMethod: Method,
     context: VerificationContext
   ): Boolean {
-    val usageHost = callerMethod.location.containingClass
-    val apiHost = invokedMethod.location.containingClass
+    val usageHost = callerMethod.containingClassFile.location
+    val apiHost = invokedMethod.containingClassFile.location
     return allow(usageHost, apiHost)
   }
 
@@ -42,8 +47,8 @@ open class ClassLocationApiUsageFilter : ApiUsageFilter {
     callerMethod: Method,
     context: VerificationContext
   ): Boolean {
-    val apiHost = callerMethod.location.containingClass
-    val usageHost = resolvedField.location.containingClass
+    val apiHost = callerMethod.containingClassFile.location
+    val usageHost = resolvedField.containingClassFile.location
     return allow(usageHost, apiHost)
   }
 
