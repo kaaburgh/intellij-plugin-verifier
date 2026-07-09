@@ -1,0 +1,1 @@
+Missing or empty 'href' attribute in <xi:include xpointer="xpointer(/top/*)"/> (at test.xml)

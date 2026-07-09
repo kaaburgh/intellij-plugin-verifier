@@ -143,7 +143,7 @@ class InvalidPluginsTest(fileSystemType: FileSystemType) : IdePluginManagerTest(
       perfectXmlBuilder.modify {
         id = "<id></id>"
       },
-      listOf(PropertyNotSpecified("id"))
+      listOf(PropertyNotSpecified("id", "plugin.xml"))
     )
   }
 

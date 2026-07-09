@@ -126,6 +126,11 @@ class XIncluderTest {
   }
 
   @Test
+  fun `missing href error`() {
+    testError("missingHref")
+  }
+
+  @Test
   fun `no fallback provided error`() {
     testError("noFallback")
   }

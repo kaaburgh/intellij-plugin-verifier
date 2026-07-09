@@ -182,7 +182,7 @@ open class SuspiciousUntilBuild(
   )
   override val message: String
     get() = "The <until-build> '$untilBuild' does not represent the actual build number. " +
-            if (additionalMessage.isNotBlank()) "$additionalMessage " else "" +
+            (if (additionalMessage.isNotBlank()) "$additionalMessage " else "") +
             "If you want your plugin to be compatible with all future IDE versions, you can remove this attribute. " +
             "However, we highly recommend setting it to the latest available IDE version."
 

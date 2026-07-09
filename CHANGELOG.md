@@ -10,6 +10,11 @@ Releases prior to January 2023 are tracked on the project GitHub [Releases Page]
 
 ### Fixed
 
+- Report a proper `XIncluderException` instead of throwing a `NullPointerException` when an `<xi:include>` element has no `href` attribute
+- Resolve every optional dependency descriptor when the same plugin ID is declared in several `<depends>` elements with different `config-file` attributes; previously all but one descriptor were silently dropped
+- Fix `SuspiciousUntilBuild` warning text that lost its recommendation sentence when additional details were present, and `DependsPluginDependency.toString()` that dropped the config-file and closing parenthesis (Kotlin `if`/`+` precedence)
+- Include the descriptor path in the `PropertyNotSpecified` problem for blank plugin IDs, consistent with all other plugin ID problems
+
 ## 1.408 - 2026-07-02
 
 ### Added

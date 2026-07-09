@@ -12,8 +12,8 @@ import com.jetbrains.plugin.structure.intellij.plugin.PluginCreator.Companion.v2
 class DependsPluginDependency(val pluginId: String, val isOptional: Boolean, val configFile: String? = null) {
   override fun toString(): String {
     return "Depends($pluginId" +
-      if (isOptional) ", optional" else "" +
-      if (configFile != null) ", configFile=$configFile" else "" +
+      (if (isOptional) ", optional" else "") +
+      (if (configFile != null) ", configFile=$configFile" else "") +
       ")"
   }
 
