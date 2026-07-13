@@ -91,6 +91,24 @@ class PluginIdVerifierTest {
     )
   }
 
+  @Test
+  fun `blank id problem carries the descriptor path`() {
+    val blankIdPlugin = plugin(" ", "Third Party Inc.")
+
+    verifier.verify(blankIdPlugin, DESCRIPTOR_PATH, problemRegistrar)
+
+    Assert.assertEquals(1, problems.size)
+    val problem = problems[0]
+    Assert.assertTrue(
+      "Expected PropertyNotSpecified, got $problem",
+      problem is com.jetbrains.plugin.structure.base.problems.PropertyNotSpecified
+    )
+    Assert.assertEquals(
+      "Invalid plugin descriptor 'plugin.xml'. The property <id> is not specified.",
+      problem.message
+    )
+  }
+
   private fun plugin(pluginId: String, pluginVendor: String): PluginBean {
     return PluginBean().apply {
       id = pluginId

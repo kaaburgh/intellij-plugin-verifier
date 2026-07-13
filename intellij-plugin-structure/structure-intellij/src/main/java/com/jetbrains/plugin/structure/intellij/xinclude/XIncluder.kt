@@ -96,12 +96,13 @@ class XIncluder private constructor(private val resourceResolver: ResourceResolv
   }
 
   private fun resolveXIncludeElements(xincludeElement: Element, bases: MutableList<XIncludeEntry>): List<Content> {
-    //V2 included configs can be located only in root
-    val href = xincludeElement.getAttributeValue(HREF).let { if (PluginCreator.v2ModulePrefix.matches(it)) "/$it" else it}
     val presentableXInclude = xincludeElement.getElementNameAndAttributes()
-    if (href.isNullOrEmpty()) {
+    val rawHref: String? = xincludeElement.getAttributeValue(HREF)
+    if (rawHref.isNullOrEmpty()) {
       throw XIncluderException(bases, "Missing or empty 'href' attribute in $presentableXInclude")
     }
+    //V2 included configs can be located only in root
+    val href = if (PluginCreator.v2ModulePrefix.matches(rawHref)) "/$rawHref" else rawHref
 
     val parseAttribute = xincludeElement.getAttributeValue(PARSE)
     if (parseAttribute != null && parseAttribute != XML) {

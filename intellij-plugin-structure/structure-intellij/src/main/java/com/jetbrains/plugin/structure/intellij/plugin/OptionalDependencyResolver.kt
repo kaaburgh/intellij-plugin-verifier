@@ -58,12 +58,15 @@ internal class OptionalDependencyResolver(private val pluginLoader: PluginLoader
     dependencyChain.dropLast()
   }
 
-  private val PluginCreator.optionalV1DependencyDescriptors: Map<PluginDependency, String>
+  // A list of distinct pairs, not a Map: the same plugin ID may be declared in several
+  // <depends> elements with different config-files, and each descriptor must be resolved.
+  // Exact duplicates (same dependency and same config-file) are still resolved only once.
+  private val PluginCreator.optionalV1DependencyDescriptors: List<Pair<PluginDependency, String>>
     get() = plugin.dependsList
       .mapNotNull { dep ->
         dep.resolveDescriptorPath()?.let { descriptor ->
           dep.asPluginDependency() to descriptor
         }
       }
-      .toMap()
+      .distinct()
 }

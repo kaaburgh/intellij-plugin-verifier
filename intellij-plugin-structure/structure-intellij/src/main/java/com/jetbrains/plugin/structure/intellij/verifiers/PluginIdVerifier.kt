@@ -21,7 +21,7 @@ class PluginIdVerifier {
 
     when {
       id.isBlank() -> {
-        problemRegistrar.registerProblem(PropertyNotSpecified("id"))
+        problemRegistrar.registerProblem(PropertyNotSpecified("id", descriptorPath))
       }
       "com.your.company.unique.plugin.id" == id -> {
         problemRegistrar.registerProblem(PropertyWithDefaultValue(descriptorPath, PropertyWithDefaultValue.DefaultProperty.ID, id))
