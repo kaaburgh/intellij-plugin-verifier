@@ -14,6 +14,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.file.FileSystem
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -84,6 +85,11 @@ class CachingJarFileSystemProvider(
       } catch (_: InterruptedException) {
         Thread.currentThread().interrupt()
         LOG.info("Cannot close delegate due to an interruption for [{}]", delegate)
+      } catch (_: NoSuchFileException) {
+        // The backing JAR was deleted (e.g. the extracted plugin directory was cleaned up) before
+        // this cached filesystem was closed. The JDK ZipFileSystem aborts close() while resolving
+        // the real path; the file is already gone, so there is nothing left to release.
+        LOG.debug("Cannot close delegate as the backing file no longer exists for [{}]", delegate)
       } catch (e: Exception) {
         LOG.error("Unable to close delegate [{}]", delegate, e)
       }

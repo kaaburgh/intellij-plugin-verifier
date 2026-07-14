@@ -4,6 +4,10 @@
 
 package com.jetbrains.plugin.structure.jar
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
+import ch.qos.logback.core.spi.AppenderAttachable
 import com.github.benmanes.caffeine.cache.Cache
 import com.jetbrains.plugin.structure.base.fs.isClosed
 import com.jetbrains.plugin.structure.base.utils.exists
@@ -12,6 +16,7 @@ import com.jetbrains.plugin.structure.base.utils.writeText
 import com.jetbrains.plugin.structure.fs.FsHandlerFileSystemProvider
 import com.jetbrains.plugin.structure.fs.FsHandlerPath
 import org.junit.Assert.*
+import org.slf4j.LoggerFactory
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -155,6 +160,41 @@ class CachingJarFileSystemProviderTest {
     // second close is expected to be idempotent
     fs.close()
     assertTrue(fs.isClosed)
+  }
+
+  @Test
+  fun `closing a delegate whose backing JAR was deleted does not log an error`() {
+    val errorAppender = ListAppender<ILoggingEvent>()
+    @Suppress("UNCHECKED_CAST")
+    val logger = LoggerFactory.getLogger(CachingJarFileSystemProvider::class.java)
+      as AppenderAttachable<ILoggingEvent>
+    logger.addAppender(errorAppender)
+    errorAppender.start()
+    try {
+      val fileSystemProvider = CachingJarFileSystemProvider(retentionTimeInSeconds = Long.MAX_VALUE)
+      val fs = fileSystemProvider.getFileSystem(jarPath)
+      assertTrue(fs.getPath("hello.txt").exists())
+      // The client is done, but the delegate stays open and cached.
+      fs.close()
+
+      // Simulate the extracted plugin directory being cleaned up while the ZIP filesystem is
+      // still cached. On Unix, deleting a file that is still open succeeds; the JDK ZipFileSystem
+      // will later fail to resolve its real path when closing.
+      Files.delete(jarPath)
+
+      // Provider shutdown closes the cached delegate. The backing JAR is gone, so the JDK aborts
+      // ZipFileSystem.close() with NoSuchFileException. This benign race must not be logged as an error.
+      fileSystemProvider.close()
+
+      val errors = errorAppender.list.filter { it.level == Level.ERROR }
+      assertTrue(
+        "Closing a delegate for a deleted JAR must not log an ERROR, but got: ${errors.map { it.formattedMessage }}",
+        errors.isEmpty()
+      )
+    } finally {
+      errorAppender.stop()
+      logger.detachAppender(errorAppender)
+    }
   }
 
   @Test
