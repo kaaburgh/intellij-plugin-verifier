@@ -1,0 +1,1 @@
+just a resource carried by a descriptor-less library jar

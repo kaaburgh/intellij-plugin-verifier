@@ -1,0 +1,18 @@
+<idea-plugin package="org.demo.harness.multidep">
+  <id>org.demo.harness.multidep</id>
+  <name>Harness Multiple Dependencies Blocks</name>
+  <version>1.0.0</version>
+  <vendor email="dev@example.com" url="https://example.com">Harness Fixtures Vendor</vendor>
+  <description><![CDATA[
+    A purpose-built fixture for the compatibility regression harness of IntelliJ Plugin Verifier.
+    Its descriptor declares two separate dependencies blocks, exercising MP-8208 handling.
+  ]]></description>
+  <idea-version since-build="231.1" until-build="243.*"/>
+  <dependencies>
+    <plugin id="com.intellij.modules.lang"/>
+  </dependencies>
+  <dependencies>
+    <plugin id="org.jetbrains.plugins.yaml"/>
+    <module name="intellij.platform.vcs.impl"/>
+  </dependencies>
+</idea-plugin>

@@ -1,0 +1,107 @@
+{
+  "$schema-note": "Corpus manifest for the Plugin Verifier compatibility regression harness. Sources: 'builtin' (text-only tree under fixtures/<id>/content, packaged deterministically at run time; directories named *.jar/*.zip become nested archives), 'url' (public artifact downloaded and verified against sha256; only used with --remote), 'local' (artifact supplied on the local filesystem, never committed).",
+  "fixtures": [
+    {
+      "id": "flat-jar",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "Minimal valid plugin distributed as a single JAR with META-INF/plugin.xml.",
+      "focus": "baseline sanity"
+    },
+    {
+      "id": "zip-classic-lib",
+      "source": {"type": "builtin", "package": "zip"},
+      "description": "Classic ZIP distribution: <plugin>/lib/<plugin>.jar containing the descriptor.",
+      "focus": "archive layout"
+    },
+    {
+      "id": "zip-extra-library-jar",
+      "source": {"type": "builtin", "package": "zip"},
+      "description": "ZIP whose lib/ holds the plugin JAR plus a descriptor-less third-party library JAR; exercises descriptor discovery among multiple JARs.",
+      "focus": "descriptor discovery"
+    },
+    {
+      "id": "zip-multiple-descriptors",
+      "source": {"type": "builtin", "package": "zip"},
+      "description": "Two JARs in lib/, each with its own META-INF/plugin.xml declaring different plugin ids; ambiguous descriptor.",
+      "focus": "parsing failure"
+    },
+    {
+      "id": "jar-no-descriptor",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "JAR without any plugin descriptor.",
+      "focus": "parsing failure"
+    },
+    {
+      "id": "jar-malformed-xml",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "plugin.xml with unclosed tags (not well-formed XML).",
+      "focus": "parsing failure"
+    },
+    {
+      "id": "jar-xinclude",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "Descriptor assembled via xi:include from a sibling file in META-INF, contributing extensions and actions.",
+      "focus": "descriptor resolution"
+    },
+    {
+      "id": "zip-optional-depends",
+      "source": {"type": "builtin", "package": "zip"},
+      "description": "Optional <depends> with config-file present in META-INF; exercises optional descriptor resolution.",
+      "focus": "dependency resolution"
+    },
+    {
+      "id": "jar-missing-optional-config",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "Optional <depends> pointing to a config-file that does not exist.",
+      "focus": "dependency resolution / diagnostics"
+    },
+    {
+      "id": "jar-v2-content-modules",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "V2 plugin model: package attribute, <content> module with its own descriptor at the classpath root, <dependencies> on plugin and module.",
+      "focus": "dependency resolution / v2 model"
+    },
+    {
+      "id": "jar-since-until-wildcard",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "Suspicious compatibility range: ancient since-build 139.0 and magic until-build 999.*.",
+      "focus": "verification diagnostics"
+    },
+    {
+      "id": "jar-theme",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "Theme plugin: themeProvider extension pointing at a JSON theme at the JAR root.",
+      "focus": "extension/theme parsing"
+    },
+    {
+      "id": "jar-product-descriptor",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "Paid plugin with <product-descriptor code/release-date/release-version>.",
+      "focus": "product descriptor parsing"
+    },
+    {
+      "id": "zip-jar-at-root",
+      "source": {"type": "builtin", "package": "zip"},
+      "description": "ZIP where the plugin JAR sits directly under the top-level directory instead of lib/.",
+      "focus": "invalid layout handling"
+    },
+    {
+      "id": "jar-utf8-bom",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "plugin.xml with a UTF-8 byte-order mark and non-ASCII plugin name.",
+      "focus": "encoding handling"
+    },
+    {
+      "id": "dir-plugin",
+      "source": {"type": "builtin", "package": "dir"},
+      "description": "Plugin supplied as an exploded directory with lib/<plugin>.jar, not as an archive.",
+      "focus": "directory input"
+    },
+    {
+      "id": "jar-multiple-dependencies-blocks",
+      "source": {"type": "builtin", "package": "jar"},
+      "description": "V2 descriptor with two separate <dependencies> blocks (MP-8208, PR #1525); older parsers ignore all but one block.",
+      "focus": "dependency resolution / known behavior change"
+    }
+  ]
+}

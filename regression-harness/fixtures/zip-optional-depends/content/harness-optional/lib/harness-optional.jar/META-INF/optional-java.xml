@@ -1,0 +1,5 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <annotator language="JAVA" implementationClass="org.demo.harness.optional.JavaAnnotator"/>
+  </extensions>
+</idea-plugin>
