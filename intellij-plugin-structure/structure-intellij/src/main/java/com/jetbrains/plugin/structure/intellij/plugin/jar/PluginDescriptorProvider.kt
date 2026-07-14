@@ -5,8 +5,8 @@
 package com.jetbrains.plugin.structure.intellij.plugin.jar
 
 import com.jetbrains.plugin.structure.base.utils.getShortExceptionMessage
+import com.jetbrains.plugin.structure.base.zip.CachingDuplicateEntriesFinder
 import com.jetbrains.plugin.structure.base.zip.ZipArchiveException
-import com.jetbrains.plugin.structure.base.zip.ZipFileHandler
 import com.jetbrains.plugin.structure.intellij.plugin.IdePluginManager.Companion.META_INF
 import com.jetbrains.plugin.structure.jar.*
 import com.jetbrains.plugin.structure.jar.PluginDescriptorResult.Found
@@ -17,10 +17,13 @@ private val LOG = LoggerFactory.getLogger(PluginDescriptorProvider::class.java)
 
 private const val DEFAULT_DESCRIPTOR_PATH = "$META_INF/$PLUGIN_XML"
 
-class PluginDescriptorProvider(private val fileSystemProvider: JarFileSystemProvider = SingletonCachingJarFileSystemProvider) {
+class PluginDescriptorProvider(
+  private val fileSystemProvider: JarFileSystemProvider = SingletonCachingJarFileSystemProvider,
+  private val duplicateEntriesFinder: CachingDuplicateEntriesFinder = CachingDuplicateEntriesFinder()
+) {
   fun <T> resolveFromJar(jarFile: Path, onSuccess: (Found) -> T): T? {
     try {
-      val duplicates = ZipFileHandler(jarFile).findDuplicateEntries()
+      val duplicates = duplicateEntriesFinder.findDuplicateEntries(jarFile)
       if (duplicates.isNotEmpty()) {
         LOG.warn("Duplicate ZIP entry '{}' found in [{}], skipping", duplicates.first(), jarFile)
         return null
