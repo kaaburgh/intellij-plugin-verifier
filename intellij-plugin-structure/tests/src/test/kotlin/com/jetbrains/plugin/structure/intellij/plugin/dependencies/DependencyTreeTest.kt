@@ -4,6 +4,7 @@ import com.jetbrains.plugin.structure.intellij.plugin.IdePlugin
 import com.jetbrains.plugin.structure.intellij.plugin.PluginDependency
 import com.jetbrains.plugin.structure.intellij.plugin.PluginDependencyImpl
 import com.jetbrains.plugin.structure.intellij.plugin.PluginV1Dependency
+import com.jetbrains.plugin.structure.intellij.plugin.PluginV2Dependency
 import com.jetbrains.plugin.structure.intellij.plugin.dependencies.IdPrefixIdeModulePredicate.Companion.HAS_COM_INTELLIJ_MODULE_PREFIX
 import com.jetbrains.plugin.structure.intellij.plugin.dependencies.legacy.LegacyPluginDependencyContributor
 import com.jetbrains.plugin.structure.intellij.verifiers.LegacyIntelliJIdeaPluginVerifier
@@ -128,6 +129,31 @@ class DependencyTreeTest {
 
     val missingOptionalDependency = PluginDependencyImpl(optionalPlugin.id, true, false)
     assertEquals(setOf(missingOptionalDependency), missingDependencies)
+  }
+
+  @Test
+  fun `os and arch constraint dependencies are neither resolved nor reported as missing`() {
+    val platformPlugin = MockIdePlugin(pluginId = "com.intellij", pluginAliases = setOf("com.intellij.modules.platform"))
+    val ide = MockIde(IdeVersion.createIdeVersion("IU-262.8665.81"), ideRoot, listOf(platformPlugin))
+
+    val osArchConstrainedPlugin = MockIdePlugin(
+      pluginId = "com.example.OsArch",
+      dependencies = listOf(
+        dependOn("com.intellij.modules.platform"),
+        PluginV2Dependency("com.intellij.modules.os.windows"),
+        PluginV2Dependency("com.intellij.modules.arch.x86_64"),
+        PluginV1Dependency.Mandatory("com.intellij.modules.os.mac"),
+        PluginV1Dependency.Mandatory("com.intellij.modules.arch.arm64"),
+      )
+    )
+
+    val dependencyTree = DependencyTree(ide, ideModulePredicate = HAS_COM_INTELLIJ_MODULE_PREFIX)
+    val missingDependencies = MissingDependencyCollector()
+    val transitiveDependencies = dependencyTree.getTransitiveDependencies(osArchConstrainedPlugin, missingDependencies)
+
+    val expectedPlatformDependency = Dependency.Module(platformPlugin, "com.intellij.modules.platform", isTransitive = false)
+    assertEquals(setOf<Dependency>(expectedPlatformDependency), transitiveDependencies)
+    assertEquals(emptySet<PluginDependency>(), missingDependencies)
   }
 
   @Test

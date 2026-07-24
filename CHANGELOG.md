@@ -10,6 +10,8 @@ Releases prior to January 2023 are tracked on the project GitHub [Releases Page]
 
 ### Fixed
 
+- Do not resolve operating system (`com.intellij.modules.os.*`) and CPU architecture (`com.intellij.modules.arch.*`) modules as regular dependencies. Such modules declare the platforms a plugin may be loaded on, they are provided by the IDE only for the platform it currently runs on, and they are no longer reported as missing dependencies.
+
 ## 1.408 - 2026-07-02
 
 ### Added

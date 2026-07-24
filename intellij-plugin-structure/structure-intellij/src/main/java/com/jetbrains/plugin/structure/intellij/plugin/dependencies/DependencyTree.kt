@@ -227,7 +227,10 @@ class DependencyTree(private val pluginProvider: PluginProvider, private val ide
   }
 
   private fun ignore(plugin: IdePlugin, dependency: PluginDependency): Boolean {
-    return dependency.isModule && plugin.hasDefinedModuleWithId(dependency.id)
+    // Operating system and CPU architecture modules constrain where a plugin may be loaded.
+    // They are not real dependencies and only the ones matching the current platform are ever available.
+    return dependency.isPlatformConstraint
+      || (dependency.isModule && plugin.hasDefinedModuleWithId(dependency.id))
   }
 
   private fun missingId(plugin: IdePlugin): String {

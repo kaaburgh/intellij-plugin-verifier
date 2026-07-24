@@ -8,6 +8,7 @@ import com.jetbrains.plugin.structure.ide.Ide
 import com.jetbrains.plugin.structure.intellij.classes.plugin.IdePluginClassesLocations
 import com.jetbrains.plugin.structure.intellij.plugin.IdePlugin
 import com.jetbrains.plugin.structure.intellij.plugin.PluginDependencyImpl
+import com.jetbrains.plugin.structure.intellij.plugin.PluginV2Dependency
 import com.jetbrains.plugin.structure.intellij.plugin.module.IdeModule
 import com.jetbrains.plugin.structure.intellij.version.IdeVersion
 import com.jetbrains.pluginverifier.dependencies.DependenciesGraphBuilder
@@ -128,6 +129,41 @@ class IdeDependencyFinderTest {
     assertEquals(setOf("myPlugin", "test", "moduleContainer", "somePlugin", "com.intellij", MOCK_IDE_MODULE_ID), deps.toSet())
 
     assertEquals(setOf(MissingDependency(externalModuleDependency, "Failed to fetch plugin.")), dependenciesGraph.getDirectMissingDependencies())
+  }
+
+  @Test
+  fun `os and arch constraints are not reported as missing dependencies`() {
+    val ideVersion = IdeVersion.createIdeVersion("IU-262.8665.81")
+    val ide = MockIde(
+      ideVersion,
+      bundledPlugins = listOf(
+        MockIdePlugin(
+          pluginId = "com.intellij",
+          pluginName = "IDEA CORE",
+          originalFile = tempFolder.newFolder("idea.core").toPath(),
+          pluginAliases = setOf("com.intellij.modules.platform")
+        )
+      )
+    )
+
+    val startPlugin = MockIdePlugin(
+      pluginId = "myPlugin",
+      pluginVersion = "1.0",
+      dependencies = listOf(
+        PluginDependencyImpl("com.intellij.modules.platform", false, true),
+        PluginV2Dependency("com.intellij.modules.os.windows"),
+        PluginV2Dependency("com.intellij.modules.arch.x86_64"),
+        PluginDependencyImpl("com.intellij.modules.os.mac", false, true),
+        PluginDependencyImpl("com.intellij.modules.arch.arm64", false, true)
+      )
+    )
+
+    val ideDependencyFinder = configureTestIdeDependencyFinder(ide)
+
+    val (dependenciesGraph, _) = DependenciesGraphBuilder(ideDependencyFinder).buildDependenciesGraph(startPlugin, ide)
+
+    assertEquals(setOf("myPlugin", "com.intellij"), dependenciesGraph.vertices.map { it.id }.toSet())
+    assertEquals(emptySet<MissingDependency>(), dependenciesGraph.getDirectMissingDependencies())
   }
 
   private fun configureTestIdeDependencyFinder(ide: Ide): DependencyFinder {
