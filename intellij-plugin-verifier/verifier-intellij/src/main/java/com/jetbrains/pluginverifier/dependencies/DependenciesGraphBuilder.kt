@@ -66,6 +66,10 @@ class DependenciesGraphBuilder(private val dependencyFinder: DependencyFinder) {
       dependencies += getRecursiveOptionalDependencies(vertex.plugin).map { PluginDependencyImpl(it.id, true, it.isModule) }
 
       for (pluginDependency in dependencies) {
+        // Operating system and CPU architecture modules constrain where a plugin may be loaded.
+        // They are not real dependencies and only the ones matching the current platform are ever available.
+        if (pluginDependency.isPlatformConstraint) continue
+
         val resolvedDependency = resolveDependency(pluginProvider, vertex, pluginDependency, graph, missingDependencies)
           ?: continue
 

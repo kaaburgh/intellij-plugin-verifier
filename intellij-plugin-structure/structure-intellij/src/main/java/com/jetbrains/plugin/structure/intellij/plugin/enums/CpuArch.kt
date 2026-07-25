@@ -15,8 +15,18 @@ enum class CpuArch(private val suffix: String) {
   val pluginAlias = ARCH_MODULE_PREFIX + suffix
 
   companion object {
+    const val MODULE_PREFIX = ARCH_MODULE_PREFIX
+
     fun getByModule(moduleName: String): CpuArch? = values().find {
       it.pluginAlias.equals(moduleName, ignoreCase = true)
     }
+
+    /**
+     * Indicates that [moduleName] declares a CPU architecture constraint, such as `com.intellij.modules.arch.x86_64`.
+     *
+     * Unlike [getByModule], this also accepts architectures that are not modeled by this enumeration yet.
+     */
+    fun isCpuArchModule(moduleName: String): Boolean =
+      moduleName.length > MODULE_PREFIX.length && moduleName.startsWith(MODULE_PREFIX, ignoreCase = true)
   }
 }
