@@ -5,8 +5,10 @@
 package com.jetbrains.plugin.structure.intellij.extractor
 
 import com.jetbrains.plugin.structure.base.utils.deleteQuietly
+import org.apache.commons.io.FileUtils
 import java.io.Closeable
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Descriptor of a plugin that has been extracted from a compressed file, usually ZIP.
@@ -17,7 +19,20 @@ data class ExtractedPlugin(
   val pluginFile: Path,
   private val fileToDelete: Path
 ) : Closeable {
+  val sizeInBytes: Long by lazy { FileUtils.sizeOf(fileToDelete.toFile()) }
+
+  private val closed = AtomicBoolean()
+  private var closeListener: ((Long) -> Unit)? = null
+
+  fun onClose(listener: (Long) -> Unit) {
+    closeListener = listener
+  }
+
   override fun close() {
-    fileToDelete.deleteQuietly()
+    if (closed.compareAndSet(false, true)) {
+      val size = sizeInBytes
+      fileToDelete.deleteQuietly()
+      closeListener?.invoke(size)
+    }
   }
 }

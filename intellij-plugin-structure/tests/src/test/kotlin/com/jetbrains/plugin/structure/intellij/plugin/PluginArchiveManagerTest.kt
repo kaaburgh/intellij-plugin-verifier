@@ -51,6 +51,12 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
     archiveResult as PluginArchiveManager.Result.Extracted
     assertEquals(1, extractedPluginsPath.listFiles().size)
     assertTrue(extractedPluginsPath.contains(archiveResult))
+    assertTrue(pluginArchiveManager.extractedArchivesSizeInBytes > 0)
+
+    pluginArchiveManager.releaseArchive(pluginArtifactPath)
+
+    assertEquals(0, extractedPluginsPath.listFiles().size)
+    assertEquals(0, pluginArchiveManager.extractedArchivesSizeInBytes)
   }
 
   @Test

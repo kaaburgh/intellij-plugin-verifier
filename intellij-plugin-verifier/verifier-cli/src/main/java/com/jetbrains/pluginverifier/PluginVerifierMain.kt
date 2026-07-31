@@ -125,7 +125,9 @@ object PluginVerifierMain {
           Unavailable -> MarketplaceRepository(URL(pluginRepositoryUrl))
         }
 
-      val pluginFilesBank = PluginFilesBank.create(pluginRepository, downloadDirectory, pluginDownloadDirDiskSpaceSetting)
+      val pluginFilesBank = PluginFilesBank.create(pluginRepository, downloadDirectory, pluginDownloadDirDiskSpaceSetting) {
+        SpaceAmount.ofBytes(pluginArchiveManager.extractedArchivesSizeInBytes)
+      }
 
       DefaultPluginDetailsProvider(pluginArchiveManager).use { pluginDetailsProvider ->
         val reportageAggregator = LoggingPluginVerificationReportageAggregator()
@@ -185,6 +187,7 @@ object PluginVerifierMain {
     logVerificationStage("Total time spent downloading plugins and their dependencies: ${totalDownloadDuration.formatDuration()}")
     logVerificationStage("Total amount of plugins and dependencies downloaded: ${totalDownloadedAmount.presentableAmount()}")
     logVerificationStage("Total amount of space used for plugins and dependencies: ${totalSpaceUsed.presentableAmount()}")
+    logVerificationStage("Plugin disk cache cleanup statistics: ${pluginFilesBank.cleanupStatistics.presentableSummary}")
     if (outputOptions.teamCityLog != null) {
       outputOptions.teamCityLog.buildStatisticValue(
         "intellij.plugin.verifier.downloading.time.ms",
@@ -198,6 +201,24 @@ object PluginVerifierMain {
         "intellij.plugin.verifier.total.space.used",
         totalSpaceUsed.to(SpaceUnit.BYTE).toLong()
       )
+      outputOptions.teamCityLog.buildStatisticValue(
+        "intellij.plugin.verifier.cache.cleanup.count",
+        pluginFilesBank.cleanupStatistics.cleanups
+      )
+      outputOptions.teamCityLog.buildStatisticValue(
+        "intellij.plugin.verifier.cache.cleanup.freed.bytes",
+        pluginFilesBank.cleanupStatistics.freedSpace.to(SpaceUnit.BYTE).toLong()
+      )
+      outputOptions.teamCityLog.buildStatisticValue(
+        "intellij.plugin.verifier.cache.cleanup.deleted.files",
+        pluginFilesBank.cleanupStatistics.deletedFiles
+      )
+      pluginFilesBank.cleanupStatistics.averageInterval?.let {
+        outputOptions.teamCityLog.buildStatisticValue(
+          "intellij.plugin.verifier.cache.cleanup.average.interval.ms",
+          it.toMillis()
+        )
+      }
     }
   }
 

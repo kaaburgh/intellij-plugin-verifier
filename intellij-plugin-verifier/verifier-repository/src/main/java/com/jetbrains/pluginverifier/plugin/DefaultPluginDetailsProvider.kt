@@ -8,6 +8,7 @@ import com.jetbrains.plugin.structure.base.plugin.PluginCreationResult
 import com.jetbrains.plugin.structure.base.plugin.PluginCreationSuccess
 import com.jetbrains.plugin.structure.base.utils.Striped
 import com.jetbrains.plugin.structure.base.utils.closeAll
+import com.jetbrains.plugin.structure.base.utils.exists
 import com.jetbrains.plugin.structure.intellij.classes.locator.CompileServerExtensionKey
 import com.jetbrains.plugin.structure.intellij.classes.plugin.BundledPluginClassesFinder
 import com.jetbrains.plugin.structure.intellij.classes.plugin.ClassSearchContext
@@ -68,13 +69,13 @@ class DefaultPluginDetailsProvider(
   override fun createPlugin(pluginInfo: PluginInfo, pluginFileLock: FileLock): PluginCreationResult<IdePlugin> {
     return if (pluginInfo is DependencyPluginInfo) {
       val pluginArtifactPath = pluginFileLock.file
-      val result = extractedPluginLocationCache[pluginArtifactPath]
+      val result = extractedPluginLocationCache[pluginArtifactPath]?.takeIf { it.hasAvailableArchiveResources() }
       if (result != null) {
         eventLog.logCached(pluginArtifactPath)
         return result
       }
       synchronized(createPluginLocks.get(pluginArtifactPath.absolutePathString())) {
-        val result = extractedPluginLocationCache[pluginArtifactPath]
+        val result = extractedPluginLocationCache[pluginArtifactPath]?.takeIf { it.hasAvailableArchiveResources() }
         if (result != null) {
           eventLog.logCached(pluginArtifactPath)
           return result
@@ -94,6 +95,9 @@ class DefaultPluginDetailsProvider(
       super.createPlugin(pluginInfo, pluginFileLock)
     }
   }
+
+  private fun PluginCreationResult<IdePlugin>.hasAvailableArchiveResources(): Boolean =
+    this !is PluginCreationSuccess || resources.filterIsInstance<PluginArchiveResource>().all { it.extractedPath.exists() }
 
   private fun PluginCreationResult<IdePlugin>.registerCloseableResources() = apply {
     if (this is PluginCreationSuccess) {

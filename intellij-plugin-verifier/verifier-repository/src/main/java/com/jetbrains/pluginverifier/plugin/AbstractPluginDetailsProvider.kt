@@ -16,8 +16,10 @@ import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager
 import com.jetbrains.plugin.structure.intellij.plugin.StructurallyValidated
 import com.jetbrains.plugin.structure.intellij.plugin.createIdePluginManager
 import com.jetbrains.plugin.structure.intellij.problems.UnableToReadPluginFile
+import com.jetbrains.plugin.structure.intellij.resources.PluginArchiveResource
 import com.jetbrains.pluginverifier.repository.PluginInfo
 import com.jetbrains.pluginverifier.repository.files.FileLock
+import java.io.Closeable
 
 /**
  * Baseline implementation of the [PluginDetailsProvider] that
@@ -40,7 +42,10 @@ abstract class AbstractPluginDetailsProvider(protected val archiveManager: Plugi
               pluginInfo,
               plugin,
               plugin.problems,
-              pluginFileLock
+              pluginFileLock,
+              resources.filterIsInstance<PluginArchiveResource>().map { archiveResource ->
+                Closeable { archiveManager.releaseArchive(archiveResource.artifactPath) }
+              }
             )
           }
 
@@ -56,14 +61,15 @@ abstract class AbstractPluginDetailsProvider(protected val archiveManager: Plugi
     pluginInfo: PluginInfo,
     idePlugin: IdePlugin
   ): PluginDetailsProvider.Result {
-    return readPluginClasses(pluginInfo, idePlugin, idePlugin.problems, null)
+    return readPluginClasses(pluginInfo, idePlugin, idePlugin.problems, null, emptyList())
   }
 
   private fun readPluginClasses(
     pluginInfo: PluginInfo,
     idePlugin: IdePlugin,
     warnings: List<PluginProblem>,
-    pluginFileLock: FileLock?
+    pluginFileLock: FileLock?,
+    pluginResources: List<Closeable>
   ): PluginDetailsProvider.Result {
     return try {
       readPluginClasses(pluginInfo, idePlugin)
@@ -74,11 +80,13 @@ abstract class AbstractPluginDetailsProvider(protected val archiveManager: Plugi
               idePlugin,
               warnings,
               pluginClassesLocations,
-              pluginFileLock
+              pluginFileLock,
+              pluginResources
             )
           )
         }
     } catch (e: Exception) {
+      pluginResources.forEach { it.closeLogged() }
       e.rethrowIfInterrupted()
       val message = e.message ?: e.javaClass.simpleName
       PluginDetailsProvider.Result.InvalidPlugin(pluginInfo, listOf(UnableToReadPluginFile(message)))

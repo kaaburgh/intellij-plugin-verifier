@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.system.measureTimeMillis
 
 private val LOG: Logger = LoggerFactory.getLogger(PluginArchiveManager::class.java)
@@ -29,6 +30,11 @@ private val LOG: Logger = LoggerFactory.getLogger(PluginArchiveManager::class.ja
 class PluginArchiveManager(private val extractDirectory: Path, private val isCollectingStats: Boolean = true) : Deletable, Closeable  {
 
   private val cache = ConcurrentHashMap<Path, Result>()
+
+  private val extractedArchivesSize = AtomicLong()
+
+  val extractedArchivesSizeInBytes: Long
+    get() = extractedArchivesSize.get()
 
   private val pluginExtractor = DefaultPluginExtractor()
 
@@ -70,11 +76,19 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     return when (val extraction = extractorResult) {
       is ExtractorResult.Success -> {
         val extractedPlugin = extraction.extractedPlugin
+        extractedPlugin.onClose { extractedArchivesSize.addAndGet(-it) }
+        extractedArchivesSize.addAndGet(extractedPlugin.sizeInBytes)
         return Extracted(pluginFile, extractedPlugin.pluginFile, extractedPlugin).also {
           it.cache(extractionDuration)
         }
       }
       is Fail -> Failed(pluginFile, extraction.pluginProblem)
+    }
+  }
+
+  fun releaseArchive(artifactPath: Path) {
+    synchronized(locks.get(artifactPath.toAbsolutePath().toString())) {
+      (cache.remove(artifactPath) as? Extracted)?.resourceToClose?.close()
     }
   }
 
