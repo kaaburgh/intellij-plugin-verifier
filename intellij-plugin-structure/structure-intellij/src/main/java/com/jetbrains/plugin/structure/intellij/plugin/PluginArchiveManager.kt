@@ -17,10 +17,10 @@ import com.jetbrains.plugin.structure.intellij.extractor.ExtractorResult
 import com.jetbrains.plugin.structure.intellij.extractor.ExtractorResult.Fail
 import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager.Result.Extracted
 import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager.Result.Failed
-import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Closeable
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -82,7 +82,12 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     return when (val extraction = extractorResult) {
       is ExtractorResult.Success -> {
         val extractedPlugin = extraction.extractedPlugin
-        val extractedSizeInBytes = FileUtils.sizeOf(extractedPlugin.pluginFile.parent.toFile())
+        val extractedSizeInBytes = Files.walk(extractedPlugin.pluginFile.parent).use { paths ->
+          paths
+            .filter { Files.isRegularFile(it) }
+            .mapToLong { Files.size(it) }
+            .sum()
+        }
         extractedArchiveSizes[pluginFile] = extractedSizeInBytes
         extractedArchivesSize.addAndGet(extractedSizeInBytes)
         return Extracted(pluginFile, extractedPlugin.pluginFile, extractedPlugin).also {
