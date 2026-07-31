@@ -17,6 +17,7 @@ import com.jetbrains.plugin.structure.intellij.extractor.ExtractorResult
 import com.jetbrains.plugin.structure.intellij.extractor.ExtractorResult.Fail
 import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager.Result.Extracted
 import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager.Result.Failed
+import org.apache.commons.io.FileUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Closeable
@@ -30,9 +31,11 @@ private val LOG: Logger = LoggerFactory.getLogger(PluginArchiveManager::class.ja
 class PluginArchiveManager(private val extractDirectory: Path, private val isCollectingStats: Boolean = true) : Deletable, Closeable  {
 
   private val cache = ConcurrentHashMap<Path, Result>()
+  private val extractedArchiveSizes = ConcurrentHashMap<Path, Long>()
 
   private val extractedArchivesSize = AtomicLong()
 
+  /** Disk space occupied by extracted archives currently owned by this manager. */
   val extractedArchivesSizeInBytes: Long
     get() = extractedArchivesSize.get()
 
@@ -48,6 +51,7 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     synchronized(locks.get(path.toAbsolutePath().toString())) {
       val cached = getCached(path)
       if (cached != null) return cached
+      releaseArchiveWithoutLock(path)
       return doExtractArchive(path)
     }
   }
@@ -76,8 +80,9 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     return when (val extraction = extractorResult) {
       is ExtractorResult.Success -> {
         val extractedPlugin = extraction.extractedPlugin
-        extractedPlugin.onClose { extractedArchivesSize.addAndGet(-it) }
-        extractedArchivesSize.addAndGet(extractedPlugin.sizeInBytes)
+        val extractedSizeInBytes = FileUtils.sizeOf(extractedPlugin.pluginFile.parent.toFile())
+        extractedArchiveSizes[pluginFile] = extractedSizeInBytes
+        extractedArchivesSize.addAndGet(extractedSizeInBytes)
         return Extracted(pluginFile, extractedPlugin.pluginFile, extractedPlugin).also {
           it.cache(extractionDuration)
         }
@@ -88,7 +93,14 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
 
   fun releaseArchive(artifactPath: Path) {
     synchronized(locks.get(artifactPath.toAbsolutePath().toString())) {
-      (cache.remove(artifactPath) as? Extracted)?.resourceToClose?.close()
+      releaseArchiveWithoutLock(artifactPath)
+    }
+  }
+
+  private fun releaseArchiveWithoutLock(artifactPath: Path) {
+    (cache.remove(artifactPath) as? Extracted)?.let {
+      it.resourceToClose.close()
+      extractedArchivesSize.addAndGet(-(extractedArchiveSizes.remove(artifactPath) ?: 0L))
     }
   }
 
@@ -114,6 +126,7 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
         val result = entry.value
         if (result is Extracted) {
           result.resourceToClose.close()
+          extractedArchivesSize.addAndGet(-(extractedArchiveSizes.remove(result.artifactPath) ?: 0L))
         }
         iterator.remove()
         removed++
