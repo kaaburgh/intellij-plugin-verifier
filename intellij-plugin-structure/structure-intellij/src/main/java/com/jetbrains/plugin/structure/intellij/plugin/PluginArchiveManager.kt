@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.system.measureTimeMillis
 
@@ -32,6 +33,7 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
 
   private val cache = ConcurrentHashMap<Path, Result>()
   private val extractedArchiveSizes = ConcurrentHashMap<Path, Long>()
+  private val archiveLeaseCounts = ConcurrentHashMap<Path, Int>()
 
   private val extractedArchivesSize = AtomicLong()
 
@@ -91,13 +93,32 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     }
   }
 
-  fun releaseArchive(artifactPath: Path) {
+  /**
+   * Keeps an extracted archive available until the returned lease is closed.
+   * Multiple consumers of the same cached extraction receive independent leases.
+   */
+  fun acquireArchive(artifactPath: Path): Closeable? {
     synchronized(locks.get(artifactPath.toAbsolutePath().toString())) {
-      releaseArchiveWithoutLock(artifactPath)
+      val extracted = cache[artifactPath] as? Extracted ?: return null
+      if (!extracted.resourceToClose.pluginFile.exists()) return null
+      archiveLeaseCounts.merge(artifactPath, 1) { count, increment -> count + increment }
+      return ArchiveLease { releaseArchiveLease(artifactPath) }
     }
   }
 
-  private fun releaseArchiveWithoutLock(artifactPath: Path) {
+  private fun releaseArchiveLease(artifactPath: Path) {
+    synchronized(locks.get(artifactPath.toAbsolutePath().toString())) {
+      val leaseCount = archiveLeaseCounts[artifactPath] ?: return
+      if (leaseCount > 1) {
+        archiveLeaseCounts[artifactPath] = leaseCount - 1
+      } else {
+        archiveLeaseCounts.remove(artifactPath)
+        removeArchiveWithoutLock(artifactPath)
+      }
+    }
+  }
+
+  private fun removeArchiveWithoutLock(artifactPath: Path) {
     (cache.remove(artifactPath) as? Extracted)?.let {
       it.resourceToClose.close()
       extractedArchivesSize.addAndGet(-(extractedArchiveSizes.remove(artifactPath) ?: 0L))
@@ -112,6 +133,7 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     val extracted = cache[artifactPath] as? Extracted ?: return
     if (extracted.resourceToClose.pluginFile.exists()) return
     if (cache.remove(artifactPath, extracted)) {
+      archiveLeaseCounts.remove(artifactPath)
       extractedArchivesSize.addAndGet(-(extractedArchiveSizes.remove(artifactPath) ?: 0L))
     }
   }
@@ -144,6 +166,7 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
         removed++
       }
     } while (removed > 0)
+    archiveLeaseCounts.clear()
   }
 
   override fun delete() {
@@ -152,6 +175,14 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
 
   override fun close() {
     clear()
+  }
+
+  private class ArchiveLease(private val release: () -> Unit) : Closeable {
+    private val closed = AtomicBoolean()
+
+    override fun close() {
+      if (closed.compareAndSet(false, true)) release()
+    }
   }
 
   sealed class Result(open val artifactPath: Path) {

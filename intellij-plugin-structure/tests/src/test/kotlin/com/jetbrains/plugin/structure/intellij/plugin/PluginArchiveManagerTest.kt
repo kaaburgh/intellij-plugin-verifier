@@ -53,7 +53,7 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
     assertTrue(extractedPluginsPath.contains(archiveResult))
     assertTrue(pluginArchiveManager.extractedArchivesSizeInBytes > 0)
 
-    pluginArchiveManager.releaseArchive(pluginArtifactPath)
+    pluginArchiveManager.acquireArchive(pluginArtifactPath)!!.close()
 
     assertEquals(0, extractedPluginsPath.listFiles().size)
     assertEquals(0, pluginArchiveManager.extractedArchivesSizeInBytes)
@@ -91,6 +91,17 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
       assertEquals(1, extractedPluginsPath.listFiles().size)
       assertTrue(extractedPluginsPath.contains(archiveResult))
     }
+
+    val firstLease = pluginArchiveManager.acquireArchive(pluginArtifactPath)!!
+    val secondLease = pluginArchiveManager.acquireArchive(pluginArtifactPath)!!
+
+    firstLease.close()
+    assertEquals(1, extractedPluginsPath.listFiles().size)
+    assertTrue(pluginArchiveManager.extractedArchivesSizeInBytes > 0)
+
+    secondLease.close()
+    assertEquals(0, extractedPluginsPath.listFiles().size)
+    assertEquals(0, pluginArchiveManager.extractedArchivesSizeInBytes)
   }
 
   @Test

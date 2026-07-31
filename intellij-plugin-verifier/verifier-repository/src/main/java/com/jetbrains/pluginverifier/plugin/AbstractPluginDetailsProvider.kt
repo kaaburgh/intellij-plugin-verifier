@@ -43,8 +43,8 @@ abstract class AbstractPluginDetailsProvider(protected val archiveManager: Plugi
               plugin,
               plugin.problems,
               pluginFileLock,
-              resources.filterIsInstance<PluginArchiveResource>().map { archiveResource ->
-                Closeable { archiveManager.releaseArchive(archiveResource.artifactPath) }
+              resources.filterIsInstance<PluginArchiveResource>().mapNotNull { archiveResource ->
+                archiveManager.acquireArchive(archiveResource.artifactPath)
               }
             )
           }
