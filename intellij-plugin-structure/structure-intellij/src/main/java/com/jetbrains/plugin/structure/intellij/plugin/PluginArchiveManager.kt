@@ -51,7 +51,7 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
     synchronized(locks.get(path.toAbsolutePath().toString())) {
       val cached = getCached(path)
       if (cached != null) return cached
-      releaseArchiveWithoutLock(path)
+      discardStaleArchive(path)
       return doExtractArchive(path)
     }
   }
@@ -100,6 +100,18 @@ class PluginArchiveManager(private val extractDirectory: Path, private val isCol
   private fun releaseArchiveWithoutLock(artifactPath: Path) {
     (cache.remove(artifactPath) as? Extracted)?.let {
       it.resourceToClose.close()
+      extractedArchivesSize.addAndGet(-(extractedArchiveSizes.remove(artifactPath) ?: 0L))
+    }
+  }
+
+  /**
+   * Forget an extraction whose files were closed directly through [Extracted.resourceToClose].
+   * The path is locked by the caller, so a live extraction cannot be removed concurrently.
+   */
+  private fun discardStaleArchive(artifactPath: Path) {
+    val extracted = cache[artifactPath] as? Extracted ?: return
+    if (extracted.resourceToClose.pluginFile.exists()) return
+    if (cache.remove(artifactPath, extracted)) {
       extractedArchivesSize.addAndGet(-(extractedArchiveSizes.remove(artifactPath) ?: 0L))
     }
   }
