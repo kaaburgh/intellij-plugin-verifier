@@ -12,7 +12,9 @@ import com.jetbrains.pluginverifier.repository.Downloadable
 import com.jetbrains.pluginverifier.repository.PluginInfo
 import com.jetbrains.pluginverifier.repository.PluginRepository
 import com.jetbrains.pluginverifier.repository.cleanup.DiskSpaceSetting
+import com.jetbrains.pluginverifier.repository.cleanup.FileCacheCleanupStatistics
 import com.jetbrains.pluginverifier.repository.cleanup.LruFileSizeSweepPolicy
+import com.jetbrains.pluginverifier.repository.cleanup.SpaceAmount
 import com.jetbrains.pluginverifier.repository.downloader.DownloadProvider
 import com.jetbrains.pluginverifier.repository.downloader.DownloadStatistics
 import com.jetbrains.pluginverifier.repository.downloader.UrlDownloader
@@ -35,16 +37,18 @@ import java.nio.file.Path
 class PluginFilesBank(
   private val fileRepository: FileRepository<PluginInfo>,
   private val urlProvider: (PluginInfo) -> URL?,
-  private val downloadProvider: DownloadProvider<PluginInfo>
+  private val downloadProvider: DownloadProvider<PluginInfo>,
+  val cleanupStatistics: FileCacheCleanupStatistics
 ) : PluginFileProvider {
 
   companion object {
     fun create(
       pluginRepository: PluginRepository,
       pluginsDir: Path,
-      diskSpaceSetting: DiskSpaceSetting
+      diskSpaceSetting: DiskSpaceSetting,
+      additionalSpaceUsed: () -> SpaceAmount = { SpaceAmount.ZERO_SPACE }
     ): PluginFilesBank {
-      val sweepPolicy = LruFileSizeSweepPolicy<PluginInfo>(diskSpaceSetting)
+      val sweepPolicy = LruFileSizeSweepPolicy<PluginInfo>(diskSpaceSetting, additionalSpaceUsed)
 
       val urlProvider: (PluginInfo) -> URL? = { (it as? Downloadable)?.downloadUrl }
       val urlDownloader = UrlDownloader(urlProvider)
@@ -66,7 +70,7 @@ class PluginFilesBank(
         addAlreadyDownloadedPlugins(pluginsDir, pluginRepository, fileRepository)
       }
 
-      return PluginFilesBank(fileRepository, urlProvider, downloadProvider)
+      return PluginFilesBank(fileRepository, urlProvider, downloadProvider, sweepPolicy.cleanupStatistics)
     }
 
     private fun getFileNameForMarketplacePlugin(pluginInfo: UpdateInfo): String =

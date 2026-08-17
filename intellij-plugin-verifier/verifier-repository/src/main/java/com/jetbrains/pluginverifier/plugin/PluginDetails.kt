@@ -42,12 +42,19 @@ class PluginDetails(
    * which guarantees that the file will not be deleted
    * while it is used.
    */
-  private val pluginFileLock: FileLock?
+  private val pluginFileLock: FileLock?,
+
+  /**
+   * Resources created while opening the plugin, most notably an extracted ZIP directory.
+   * Their lifetime is tied to this cache entry rather than to the whole verifier process.
+   */
+  private val pluginResources: List<Closeable> = emptyList()
 
 ) : Closeable {
 
   override fun close() {
     pluginClassesLocations.closeLogged()
+    pluginResources.forEach { it.closeLogged() }
     pluginFileLock.closeLogged()
   }
 

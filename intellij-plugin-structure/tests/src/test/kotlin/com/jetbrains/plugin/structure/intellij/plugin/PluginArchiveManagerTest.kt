@@ -51,6 +51,12 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
     archiveResult as PluginArchiveManager.Result.Extracted
     assertEquals(1, extractedPluginsPath.listFiles().size)
     assertTrue(extractedPluginsPath.contains(archiveResult))
+    assertTrue(pluginArchiveManager.extractedArchivesSizeInBytes > 0)
+
+    pluginArchiveManager.acquireArchive(pluginArtifactPath)!!.close()
+
+    assertEquals(0, extractedPluginsPath.listFiles().size)
+    assertEquals(0, pluginArchiveManager.extractedArchivesSizeInBytes)
   }
 
   @Test
@@ -85,6 +91,17 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
       assertEquals(1, extractedPluginsPath.listFiles().size)
       assertTrue(extractedPluginsPath.contains(archiveResult))
     }
+
+    val firstLease = pluginArchiveManager.acquireArchive(pluginArtifactPath)!!
+    val secondLease = pluginArchiveManager.acquireArchive(pluginArtifactPath)!!
+
+    firstLease.close()
+    assertEquals(1, extractedPluginsPath.listFiles().size)
+    assertTrue(pluginArchiveManager.extractedArchivesSizeInBytes > 0)
+
+    secondLease.close()
+    assertEquals(0, extractedPluginsPath.listFiles().size)
+    assertEquals(0, pluginArchiveManager.extractedArchivesSizeInBytes)
   }
 
   @Test
@@ -106,6 +123,7 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
     firstArchiveResult as PluginArchiveManager.Result.Extracted
     assertEquals(1, extractedPluginsPath.listFiles().size)
     assertTrue(extractedPluginsPath.contains(firstArchiveResult))
+    val extractedSize = pluginArchiveManager.extractedArchivesSizeInBytes
 
     firstArchiveResult.resourceToClose.close()
 
@@ -114,6 +132,7 @@ class PluginArchiveManagerTest(fileSystemType: FileSystemType) : BaseFileSystemA
     secondArchive as PluginArchiveManager.Result.Extracted
     assertEquals(1, extractedPluginsPath.listFiles().size)
     assertTrue(extractedPluginsPath.contains(secondArchive))
+    assertEquals(extractedSize, pluginArchiveManager.extractedArchivesSizeInBytes)
 
     secondArchive.resourceToClose.close()
   }

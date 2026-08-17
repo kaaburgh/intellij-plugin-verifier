@@ -28,7 +28,7 @@ class PluginDetailsProviderTest : BasePluginTest() {
   }
 
   @Test
-  fun `plugin info is cached for ZIPed plugins`() {
+  fun `extracted ZIP is cached only for lifetime of plugin details`() {
     val header = ideaPlugin("com.example")
     val pluginZipPath = buildZipFile(temporaryFolder.newFile("plugin.zip").toPath()) {
       dir("SomePlugin") {
@@ -54,13 +54,14 @@ class PluginDetailsProviderTest : BasePluginTest() {
       repeat(2) {
         val pluginDetailsResult = provider.providePluginDetails(pluginInfo, IdleFileLock(pluginZipPath))
         assertTrue(pluginDetailsResult is PluginDetailsProvider.Result.Provided)
+        pluginDetailsResult.close()
       }
       // Closeables are handled by the plugin cache. No other should be open
       assertEquals(0, provider.closeableResourcesSize)
       with(provider.eventLog) {
         assertEquals(2, size)
         assertEquals("extracted $pluginZipPath", this[0])
-        assertEquals("cached $pluginZipPath", this[1])
+        assertEquals("extracted $pluginZipPath", this[1])
       }
     }
   }

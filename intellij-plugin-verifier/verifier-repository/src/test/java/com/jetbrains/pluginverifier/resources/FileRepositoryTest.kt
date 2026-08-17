@@ -161,6 +161,30 @@ class FileRepositoryTest {
     assertEquals(ONE_BYTE * 2, repoSize)
   }
 
+  @Test
+  fun `include additional disk usage when cleaning repository`() {
+    val repositoryDir = tempFolder.newFolderPath()
+    val sweepPolicy = LruFileSizeSweepPolicy<Int>(
+      DiskSpaceSetting(ONE_BYTE * 10, ONE_BYTE * 2, ONE_BYTE * 3),
+      additionalSpaceUsed = { ONE_BYTE * 3 }
+    )
+
+    repeat(10) {
+      repositoryDir.resolve(it.toString()).writeBytes(byteArrayOf(0))
+    }
+
+    FileRepository(
+      createDownloadingProvider(repositoryDir),
+      sweepPolicy
+    ).addInitialFilesFrom(repositoryDir) { it.nameWithoutExtension.toIntOrNull() }
+
+    assertEquals(ONE_BYTE * 4, repositoryDir.fileSize)
+    assertEquals(3L, sweepPolicy.cleanupStatistics.cleanups)
+    assertEquals(6L, sweepPolicy.cleanupStatistics.deletedFiles)
+    assertEquals(ONE_BYTE * 6, sweepPolicy.cleanupStatistics.freedSpace)
+    assertNotNull(sweepPolicy.cleanupStatistics.averageInterval)
+  }
+
   /**
    * Test the following case:
    *
