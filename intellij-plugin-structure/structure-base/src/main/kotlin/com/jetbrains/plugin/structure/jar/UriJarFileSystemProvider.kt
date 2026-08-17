@@ -20,6 +20,14 @@ class UriJarFileSystemProvider(private val pathToUri: (Path) -> URI = { it.toUri
       if (!jarPath.isZipOrJar()) {
         throw JarArchiveCannotBeOpenException(jarPath, "must end with '.zip' or '.jar'")
       }
+      if (jarPath.fileSystem !== FileSystems.getDefault()) {
+        // A 'jar:' URI over a non-default filesystem (e.g. an in-memory one) is resolved by the ZIP
+        // filesystem provider against installed providers only, which fails with
+        // FileSystemNotFoundException for such paths. Open the archive directly from the Path instead.
+        return FileSystems.newFileSystem(jarPath, UriJarFileSystemProvider::class.java.classLoader).also {
+          log.debug("Creating a new JAR filesystem from a non-default filesystem path <{}>", jarUri)
+        }
+      }
       try {
         FileSystems.getFileSystem(jarUri).also {
           log.debug("Reusing JAR filesystem from JVM cache <{}>", jarUri)

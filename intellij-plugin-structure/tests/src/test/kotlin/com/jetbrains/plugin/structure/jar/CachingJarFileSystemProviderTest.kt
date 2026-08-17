@@ -11,6 +11,8 @@ import com.jetbrains.plugin.structure.base.utils.isFile
 import com.jetbrains.plugin.structure.base.utils.writeText
 import com.jetbrains.plugin.structure.fs.FsHandlerFileSystemProvider
 import com.jetbrains.plugin.structure.fs.FsHandlerPath
+import com.jetbrains.plugin.structure.rules.FileSystemAwareTemporaryFolder
+import com.jetbrains.plugin.structure.rules.FileSystemType
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -25,12 +27,18 @@ import java.nio.file.attribute.FileAttribute
 import java.nio.file.attribute.FileAttributeView
 import java.nio.file.spi.FileSystemProvider
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class CachingJarFileSystemProviderTest {
 
   @Rule
   @JvmField
   val tempFolder = TemporaryFolder()
+
+  @Rule
+  @JvmField
+  val inMemoryFolder = FileSystemAwareTemporaryFolder(FileSystemType.IN_MEMORY)
 
   private lateinit var jarPath: Path
 
@@ -39,6 +47,26 @@ class CachingJarFileSystemProviderTest {
     jarPath = tempFolder.root.toPath().resolve("test.jar")
     FileSystems.newFileSystem(URI.create("jar:${jarPath.toUri()}"), mapOf<String, Any>("create" to true)).use {
       it.getPath("hello.txt").writeText("Hello World")
+    }
+  }
+
+  @Test
+  fun `filesystem is provided for a JAR on a non-default filesystem`() {
+    val inMemoryJarPath = inMemoryFolder.root.resolve("in-memory.jar")
+    ZipOutputStream(Files.newOutputStream(inMemoryJarPath)).use { zipOut ->
+      zipOut.putNextEntry(ZipEntry("hello.txt"))
+      zipOut.write("Hello World".toByteArray())
+      zipOut.closeEntry()
+    }
+
+    val fileSystemProvider = CachingJarFileSystemProvider()
+    val fs = fileSystemProvider.getFileSystem(inMemoryJarPath)
+    try {
+      val helloTxtPath: Path = fs.getPath("hello.txt")
+      assertTrue(helloTxtPath.exists())
+      assertTrue(helloTxtPath.isFile)
+    } finally {
+      fs.close()
     }
   }
 
