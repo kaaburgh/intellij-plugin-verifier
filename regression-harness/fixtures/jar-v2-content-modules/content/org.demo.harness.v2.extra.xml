@@ -1,0 +1,8 @@
+<idea-plugin package="org.demo.harness.v2.extra">
+  <dependencies>
+    <module name="intellij.platform.lang.impl"/>
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="org.demo.harness.v2.extra.ExtraService"/>
+  </extensions>
+</idea-plugin>

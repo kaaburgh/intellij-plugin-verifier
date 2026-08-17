@@ -1,0 +1,54 @@
+name: Compatibility Regression Harness
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: "Baseline implementation (latest | <version> | g:a:v)"
+        required: false
+        default: "latest"
+      candidate:
+        description: "Candidate implementation (local | <version> | g:a:v)"
+        required: false
+        default: "local"
+      fail-on:
+        description: "Fail the job on differences (none | semantic | any)"
+        required: false
+        default: "none"
+  pull_request:
+    paths:
+      - "intellij-plugin-structure/**"
+      - "regression-harness/**"
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run regression harness
+        run: |
+          python3 regression-harness/harness.py \
+            --baseline "${{ github.event.inputs.baseline || 'latest' }}" \
+            --candidate "${{ github.event.inputs.candidate || 'local' }}" \
+            --out regression-harness/work/ci \
+            --fail-on "${{ github.event.inputs.fail-on || 'none' }}"
+
+      - name: Publish report to job summary
+        if: always()
+        run: cat regression-harness/work/ci/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compat-regression-report
+          path: regression-harness/work/ci/
+          if-no-files-found: ignore

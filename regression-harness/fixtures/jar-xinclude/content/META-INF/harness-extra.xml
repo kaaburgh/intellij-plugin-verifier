@@ -1,0 +1,8 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <appStarter implementation="org.demo.harness.xinclude.Starter"/>
+  </extensions>
+  <actions>
+    <action id="org.demo.harness.xinclude.action" class="org.demo.harness.xinclude.DemoAction" text="Harness XInclude Action"/>
+  </actions>
+</idea-plugin>

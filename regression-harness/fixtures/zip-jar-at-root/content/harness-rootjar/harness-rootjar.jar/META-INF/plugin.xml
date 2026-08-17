@@ -1,0 +1,13 @@
+<idea-plugin>
+  <id>org.demo.harness.rootjar</id>
+  <name>Harness Root Jar Layout</name>
+  <version>1.0.0</version>
+  <vendor email="dev@example.com" url="https://example.com">Harness Fixtures Vendor</vendor>
+  <description><![CDATA[
+    A purpose-built fixture for the compatibility regression harness of IntelliJ Plugin Verifier.
+    It exists only to exercise the plugin descriptor parser and has no runtime functionality at all.
+  ]]></description>
+  <change-notes><![CDATA[Initial fixture release. No functional changes are included.]]></change-notes>
+  <idea-version since-build="231.1" until-build="243.*"/>
+  <depends>com.intellij.modules.platform</depends>
+</idea-plugin>
