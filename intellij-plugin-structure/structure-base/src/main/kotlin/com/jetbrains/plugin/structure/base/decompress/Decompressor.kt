@@ -123,7 +123,8 @@ internal class ZipDecompressor(private val zipFile: Path, sizeLimit: Long?) : De
   private lateinit var stream: ZipInputStream
 
   override fun openStream() {
-    stream = ZipInputStream(zipFile.inputStream())
+    // ZipInputStream reads the underlying stream in small chunks; buffering avoids a syscall per chunk
+    stream = ZipInputStream(zipFile.bufferedInputStream())
   }
 
   override fun nextEntry(): Entry? {

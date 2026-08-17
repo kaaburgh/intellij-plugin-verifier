@@ -9,6 +9,7 @@ import com.jetbrains.plugin.structure.base.plugin.PluginManager
 import com.jetbrains.plugin.structure.base.plugin.Settings
 import com.jetbrains.plugin.structure.base.problems.IncorrectZipOrJarFile
 import com.jetbrains.plugin.structure.base.utils.*
+import com.jetbrains.plugin.structure.base.zip.CachingDuplicateEntriesFinder
 import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager.Result.Extracted
 import com.jetbrains.plugin.structure.intellij.plugin.PluginArchiveManager.Result.Failed
 import com.jetbrains.plugin.structure.intellij.plugin.PluginCreator.Companion.createInvalidPlugin
@@ -38,9 +39,11 @@ class IdePluginManager private constructor(
   private val fileSystemProvider: JarFileSystemProvider = SingletonCachingJarFileSystemProvider
 ) : PluginManager<IdePlugin> {
 
+  private val duplicateEntriesFinder = CachingDuplicateEntriesFinder()
+
   private val pluginLoaderRegistry = PluginLoaderProvider().apply {
-    register(JarPluginLoader.Context::class.java, JarPluginLoader(fileSystemProvider))
-    register(JarModuleLoader.Context::class.java, JarModuleLoader(fileSystemProvider))
+    register(JarPluginLoader.Context::class.java, JarPluginLoader(fileSystemProvider, duplicateEntriesFinder))
+    register(JarModuleLoader.Context::class.java, JarModuleLoader(fileSystemProvider, duplicateEntriesFinder))
     register(PluginDirectoryLoader.Context::class.java, PluginDirectoryLoader(pluginLoaderRegistry = this))
     register(LibDirectoryPluginLoader.Context::class.java,
       LibDirectoryPluginLoader(pluginLoaderRegistry = this, fileSystemProvider)
